@@ -3,8 +3,11 @@ import { Container, Form, Button, Alert, Modal } from 'react-bootstrap';
 import axios from 'axios';
 import excelImage from '../../assets/example_lead_excel_format.png'; // Importing the image file
 import excelSheet from '../lead_upload_excel_format.xlsx'
+import { baseURL } from '../config';
+import toast, { Toaster } from 'react-hot-toast';
+import CounsellorsDetails from './admin/CounsellorDetails';
 
-const LeadUpload = () => {
+const UploadLeads = () => {
   const [file, setFile] = useState(null);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
@@ -36,19 +39,36 @@ const LeadUpload = () => {
 
     const formData = new FormData();
     formData.append('file', file);
+    const token = localStorage.getItem("token");
+    if (!token) {
+        setError("No token provided.");
+        return;
+    }
+
+    const config = {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    };
 
     axios
-      .post('http://localhost:3003/api/lead/upload-leads', formData)
+      .post(`${baseURL}/api/lead/upload-leads`, formData,config)
       .then((response) => {
         setSuccessMessage('Leads uploaded successfully.');
         setError(null);
         setFile(null); // Clear the file input
       })
       .catch((error) => {
+        if (error.response && error.response.status === 403) {
+          toast.error('Access Forbidden');
+          console.error(error)
+      }else{
         setError('Failed to upload leads. Please try again.');
         console.error('Error uploading leads:', error);
         setSuccessMessage(null);
+      }
       });
+      
   };
 
   const handleDownload = () => {
@@ -70,6 +90,7 @@ const LeadUpload = () => {
 
   return (
     <Container className="mt-5">
+      <Toaster />
       <h2>Upload Leads</h2>
       <div className='my-3'>
       <Button variant="secondary" className="me-3" onClick={() => setShowModal(true)}>
@@ -95,13 +116,14 @@ const LeadUpload = () => {
         <h5 className="bold">Excel Sheet Upload Information</h5>
         <ul>
           <li className="lead">
-            <strong>Email Field:</strong> The email field is used to check for duplicates. If a lead
-            with the same email already exists in the database, that row will be skipped.
+            <strong>Phone field</strong> The phone field is used to check for duplicates. If a lead
+            with the same phone already exists in the database, that row will be skipped.
           </li>
           <li className="lead">
-            <strong>Date Format:</strong> Ensure that the <code>contacted_date</code> and{' '}
-            <code>next_contact_date</code> fields are formatted as dates (<code>YYYY-MM-DD</code>)
-            in your Excel sheet.
+            <strong>email Format:</strong> Ensure that the <code>email</code> field is in proper format invalid emails are skipped 
+          </li>
+          <li className="lead">
+            <strong>counsellor_id Format:</strong> Ensure that the <code>counsellor_id</code> is a number and inavalid counsellor_id's are skipped 
           </li>
           <li className="lead">
             <strong>Empty Fields:</strong> Rows where all fields are empty will be skipped. If only
@@ -109,6 +131,7 @@ const LeadUpload = () => {
           </li>
         </ul>
       </div>
+      <CounsellorsDetails />
 
       {/* Modal to display Excel format image */}
       <Modal show={showModal} onHide={() => setShowModal(false)} size="lg" centered>
@@ -128,4 +151,4 @@ const LeadUpload = () => {
   );
 };
 
-export default LeadUpload;
+export default UploadLeads;

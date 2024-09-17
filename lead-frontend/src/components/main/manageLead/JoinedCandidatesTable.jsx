@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Form, Container, Pagination } from 'react-bootstrap';
 import axios from 'axios';
+import { baseURL } from '../../config';
 
 const JoinedCandidatesTable = () => {
     const [candidates, setCandidates] = useState([]);
@@ -10,7 +11,7 @@ const JoinedCandidatesTable = () => {
 
     // Fetch joined candidates data on component mount
     useEffect(() => {
-        axios.get('http://localhost:3003/api/lead/joined-leads') // Ensure you have this route returning only joined candidates
+        axios.get(`${baseURL}/api/lead/joined-leads`) // Ensure you have this route returning only joined candidates
             .then(response => {
                 setCandidates(response.data.leads);
             })

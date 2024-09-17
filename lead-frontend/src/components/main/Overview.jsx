@@ -3,6 +3,7 @@ import { Table, Alert, Button, Form, Pagination, Badge } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import moment from 'moment';
+import { baseURL } from '../config';
 
 const Overview = () => {
   const [leadData, setLeadData] = useState([]);
@@ -16,8 +17,20 @@ const Overview = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('http://localhost:3003/api/lead/get-lead-data');
+        const token = localStorage.getItem("token");
+        if (!token) {
+            setError("No token provided.");
+            return;
+        }
 
+        const config = {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        };
+        const response = await axios.get(`${baseURL}/api/lead/get-lead-data`,config
+        );
+        console.log('response ', response)
         const today = moment().startOf('day');
         // Sort leads, prioritizing those with today's next contact date
         const sortedLeads = response.data.leads.sort((a, b) => {

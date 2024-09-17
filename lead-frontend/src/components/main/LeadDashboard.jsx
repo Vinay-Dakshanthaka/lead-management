@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Table, Container, Row, Col, Card } from 'react-bootstrap';
 import Overview from './Overview';
+import { baseURL } from '../config';
 
 const LeadDashboard = () => {
     const [leadData, setLeadData] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        axios.get('http://localhost:3003/api/lead/get-lead-data')
+        axios.get(`${baseURL}/api/lead/get-lead-data`)
             .then(response => {
                 setLeadData(response.data.leads);
                 setLoading(false);
