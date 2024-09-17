@@ -1,5 +1,6 @@
 lead-backend/node_modules
 
-lead-backend/.env
+./lead-backend/.env
 
 lead-frontend/node_modules
+
