@@ -15,7 +15,7 @@ const app = express();
 const corsOptions = {
     // origin: 'https://www.laragrooming.com',
     // origin: ['https://leads.paintpulse.in'],
-    origin: ['https://leads.laragrooming.com'],
+    origin: ['https://leads.laragrooming.com'], 
     optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
   };
   
