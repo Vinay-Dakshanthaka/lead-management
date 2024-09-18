@@ -14,7 +14,8 @@ const app = express();
 
 const corsOptions = {
     // origin: 'https://www.laragrooming.com',
-    origin: ['https://leads.paintpulse.in'],
+    // origin: ['https://leads.paintpulse.in'],
+    origin: ['https://leads.laragrooming.com'],
     optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
   };
   
@@ -35,7 +36,8 @@ app.use('/api/auth', authRoute);
 app.use('/api/admin', adminRoute);
 app.use('/api/counsellor', counsellorRoute);
 
-const PORT = 3003;
+// const PORT = 3003;
+const PORT = 3004;      //api.leads.laragrooming.com
 
 (async () => {
     try {
