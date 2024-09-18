@@ -54,7 +54,7 @@ const ResetPassword = () => {
                 setSuccessMessage('Password reset successfully');
                 toast.success('Password reset successfully');
                 setTimeout(() => {
-                    navigate('/signin'); // Redirect to signin page after successful password reset
+                    navigate('/sign-in'); // Redirect to signin page after successful password reset
                 }, 2000);
             }
         } catch (error) {

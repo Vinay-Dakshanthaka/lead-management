@@ -87,7 +87,6 @@ import SignUpWithDummyPassword from './auth/SignUpWithDummyPassword';
 import ReassignLeadToCounsellor from './admin/ReassignLeadToCounsellor';
 import UpdatePasswordForm from './auth/UpdatePasswordForm';
 import ProtectedRoute from '../header/ProtectedRoute';
-import SignUpForm from './auth/SignUpForm';
 
 const Main = ({ role, isLoggedIn, passwordUpdated }) => {
   return (
@@ -177,8 +176,6 @@ const Main = ({ role, isLoggedIn, passwordUpdated }) => {
         <Route path="/forgot-password" element={<ResetPasswordEmail />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/" element={<SignInForm />} />
-        <Route path="/sign-up" element={<SignUpForm />} />
-        
 
         {/* Catch-All 404 Route */}
         <Route path="*" element={<h1>404 - Page Not Found</h1>} />
