@@ -56,7 +56,7 @@ const SignUpForm = () => {
             try {
                 const token = localStorage.getItem("token");
                 if (!token) {
-                    setError("No token provided.");
+                    // setError("No token provided.");
                     return;
                 }
         
@@ -70,7 +70,7 @@ const SignUpForm = () => {
                     email,
                     phone,
                     password,
-                },config);
+                });
                 if (response.status === 201) {
                     toast.success('Account created successfully');
                 }

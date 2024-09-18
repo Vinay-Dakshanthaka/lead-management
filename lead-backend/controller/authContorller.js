@@ -14,19 +14,19 @@ const secretKey =  process.env.JWT_SECRET;
 
 const signUp = async (req, res) => {
     try {
-        const userId = req.counsellor_id;
-        const user = await Counsellor.findByPk(userId);
+        // const userId = req.counsellor_id;
+        // const user = await Counsellor.findByPk(userId);
         
-        if (!user) {
-            return res.status(404).send({ message: "No user found" });
-        }
+        // if (!user) {
+        //     return res.status(404).send({ message: "No user found" });
+        // }
 
-        const role = user.role;
+        // const role = user.role;
 
-        // Check if the role is COUNSELLOR
-        if (role !== 'ADMIN') {
-            return res.status(403).send({ message: "Access denied. Insufficient permissions." });
-        }
+        // // Check if the role is COUNSELLOR
+        // if (role !== 'ADMIN') {
+        //     return res.status(403).send({ message: "Access denied. Insufficient permissions." });
+        // }
 
         const { email, phone, password, is_active = true } = req.body;
 

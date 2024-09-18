@@ -3,7 +3,7 @@ const authController = require('../controller/authContorller');
 const authRouter = express.Router();
 const authenticateToken  = require('../middlewares/authenticateToken')
 
-authRouter.post('/sign-up',authenticateToken, authController.signUp);
+authRouter.post('/sign-up', authController.signUp);
 
 authRouter.post('/signUpWithDummyPassword',authenticateToken, authController.signUpWithDummyPassword);
 
