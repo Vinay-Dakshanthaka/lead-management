@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Form, Button, Container, Row, Col, Alert, Spinner } from 'react-bootstrap';
 import { toast } from 'react-hot-toast';
 import { baseURL } from '../../config';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const UpdatePasswordForm = () => {
   const [originalPassword, setOriginalPassword] = useState('');
@@ -73,6 +73,7 @@ const UpdatePasswordForm = () => {
 
   return (
     <Container>
+      <Link to='/update-profile' className='btn btn-outline-primary'>Update Details</Link>
       <Row className="justify-content-center mt-5">
         <Col xs={12} md={6}>
           <h3 className="text-center mb-4">Update Your Password</h3>

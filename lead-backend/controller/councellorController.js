@@ -131,7 +131,79 @@ const getAllLeadsForCounsellorById = async (req, res) => {
     }
 };
 
+const getCounsellorDetailsById = async (req, res) => {
+    try {
+        const counsellor_id = req.counsellor_id;
+
+        // Fetch the counsellor details from the Counsellor table by counsellor_id
+        const counsellor = await Counsellor.findByPk(counsellor_id, {
+            attributes: ['counsellor_id', 'name', 'email', 'phone', 'role', 'createdAt'] // Add other relevant counsellor fields if needed
+        });
+
+        // If counsellor is not found, return an error message
+        if (!counsellor) {
+            return res.status(404).send({ message: "Counsellor not found" });
+        }
+
+        // Return the counsellor details
+        return res.status(200).send({
+            message: "Counsellor details retrieved successfully",
+            counsellor: {
+                counsellor_id: counsellor.counsellor_id,
+                name: counsellor.name,
+                email: counsellor.email,
+                phone: counsellor.phone,
+                role: counsellor.role,
+                createdAt: counsellor.createdAt
+            }
+        });
+    } catch (error) {
+        console.error("Error retrieving counsellor details:", error);
+        return res.status(500).send({ message: "Failed to retrieve counsellor details", error });
+    }
+};
+
+const updateCounsellorDetailsById = async (req, res) => {
+    try {
+        const counsellor_id = req.counsellor_id;
+        const { name, email, phone} = req.body; // Assuming these fields are sent in the request body
+
+        // Fetch the counsellor to check if they exist
+        const counsellor = await Counsellor.findByPk(counsellor_id);
+
+        // If counsellor is not found, return an error message
+        if (!counsellor) {
+            return res.status(404).send({ message: "Counsellor not found" });
+        }
+
+        // Update the counsellor details
+        await counsellor.update({
+            name: name || counsellor.name, // Keep the original value if no new value is provided
+            email: email || counsellor.email,
+            phone: phone || counsellor.phone,
+            // role: role || counsellor.role
+        });
+
+        // Return the updated counsellor details
+        return res.status(200).send({
+            message: "Counsellor details updated successfully",
+            counsellor: {
+                counsellor_id: counsellor.counsellor_id,
+                name: counsellor.name,
+                email: counsellor.email,
+                phone: counsellor.phone,
+                // role: counsellor.role
+            }
+        });
+    } catch (error) {
+        console.error("Error updating counsellor details:", error);
+        return res.status(500).send({ message: "Failed to update counsellor details", error });
+    }
+};
+
 
   module.exports = {
     getAllLeadsForCounsellorById,
+    updateCounsellorDetailsById,
+    getCounsellorDetailsById,
   }

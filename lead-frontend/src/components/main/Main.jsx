@@ -87,6 +87,7 @@ import SignUpWithDummyPassword from './auth/SignUpWithDummyPassword';
 import ReassignLeadToCounsellor from './admin/ReassignLeadToCounsellor';
 import UpdatePasswordForm from './auth/UpdatePasswordForm';
 import ProtectedRoute from '../header/ProtectedRoute';
+import UpdateCounsellorDetails from './counsellor/UpdateCounsellorDetails';
 
 const Main = ({ role, isLoggedIn, passwordUpdated }) => {
   return (
@@ -111,6 +112,11 @@ const Main = ({ role, isLoggedIn, passwordUpdated }) => {
         <Route path="/joined-leads" element={
           <ProtectedRoute isLoggedIn={isLoggedIn} passwordUpdated={passwordUpdated}>
             <JoinedCandidatesTable />
+          </ProtectedRoute>
+        } />
+        <Route path="/update-profile" element={
+          <ProtectedRoute isLoggedIn={isLoggedIn} passwordUpdated={passwordUpdated}>
+            <UpdateCounsellorDetails />
           </ProtectedRoute>
         } />
         <Route path="/add-new" element={

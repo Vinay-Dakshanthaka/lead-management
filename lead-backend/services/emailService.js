@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const { baseURL } = require('../controller/baseUrlConfig');
 
 // Create reusable transporter object using SMTP transport
 // const transporter = nodemailer.createTransport({
@@ -32,6 +33,7 @@ const sendWelcomeEmail = async (email, password) => {
                <p>Your account has been created. Use the following credentials to log in:</p>
                <p><strong>Email:</strong> ${email}</p>
                <p><strong>Password:</strong> ${password}</p>
+               <p><strong>Sign in Here:</strong> ${baseURL}</p>
                <p>Please change your password after logging in.</p>`
     };
 

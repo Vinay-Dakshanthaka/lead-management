@@ -34,7 +34,7 @@ const SignInForm = () => {
     if (Object.keys(formErrors).length === 0) {
       try {
         const response = await axios.post(`${baseURL}/api/auth/sign-in`, { email, password });
-        console.log(response.data);
+        // console.log(response.data);
 
         if (response.status === 200) {
           // Correctly destructure the response data
