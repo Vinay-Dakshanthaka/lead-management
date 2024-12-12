@@ -1,0 +1,115 @@
+OFFICIAL DOCUMENTATIN LINK -->  https://developers.facebook.com/docs/whatsapp/business-management-api/message-templates#template-categories
+------------------------------------
+
+
+
+
+Create and Manage Templates
+-------------------------------------------------------------------------
+Templates are used when sending template messages with either the Cloud API, hosted by Meta, or the On-Premises API. Cloud API reviews templates and variable parameters using machine learning to protect the security and integrity of Cloud API services. When Cloud API reviews templates and variable text, no information is shared with WhatsApp.
+
+Templates can be created using the Business Management API or the WhatsApp Business Manager. The number of templates a WhatsApp Business Account can have is determined by its parent business. If a parent business is unverified, each of its WhatsApp Business Accounts is limited to 250 templates. However, if the parent business is verified and at least one of its WhatsApp Business Accounts has a business phone number with an approved display name, each of its WhatsApp Business Accounts can have up to 6,000 templates.
+
+Before You Start
+You will need:
+------------------------------------------------------------------------------------------------------
+
+A System User access token that is linked to the business
+The whatsapp_business_management permission
+The WhatsApp Business Account ID for the business
+The media asset handle for any document, image, or video file to be used in a media template. To get a media asset handle you must upload the media asset using the Resumable Upload API.
+
+Limitations
+-----------------------------------------------------
+The message template name field is limited to 512 characters.
+The message template content field is limited to 1024 characters.
+A template can only be edited when it is in a state of Approved, Rejected, or Paused. A template can be edited once per day, up to 10 times per month.
+WhatsApp Business Accounts can only create 100 message templates per hour.
+Templates composed of 4 or more buttons, or a quick reply button and one or more buttons of another type, cannot be viewed on WhatsApp desktop clients. WhatsApp users who receive one of these template messages will be prompted to view the message on a phone instead.
+
+
+
+Creating Templates
+------------------------------------------------------------
+Send a POST request to the WhatsApp Business Account > Message Templates endpoint to create a template.
+
+Request Syntax
+-----------------------------------------
+POST /<WHATSAPP_BUSINESS_ACCOUNT_ID>/message_templates
+
+Post Body
+-------------------------------------------------
+{
+  "name": "<NAME>",  
+  "category": "<CATEGORY>", 
+  "allow_category_change": <ALLOW_CATEGORY_CHANGE>,
+  "language": "<LANGUAGE>",
+  "components": [<COMPONENTS>]
+}
+
+
+NAME :  Template name -- required -- String  -- max 512 chars  
+CATEGORY : Template category -- required --  enum --
+template categories provided 
+--AUTHENTICATION
+--MARKETING
+--UTILITY
+
+ALLOW_CATEGORY_CHANGE :optional -- boolean --Set to true to allow us to automatically assign a category. If omitted, the template may be rejected due to miscategorization.
+
+LANGUAGE : required -- Template language and locale code.
+
+COMPONENTS : required -- Array of objects -- Components that make up the template see the below ginve template component section
+
+
+
+Template Components
+--------------------------------------------------------
+Templates are composed of various text, media, and interactive components, based on your business needs. Refer to the Template Components document for a list of all possible components and their requirements as well as samples and example queries.
+
+When creating a template, define its components by assigning an array of component objects to the components property in the body of the request.
+
+For example, here's an array containing a text body component with two variables and sample values, a phone number button component, and a URL button component:
+
+[
+  {
+    "type": "BODY",
+    "text": "Thank you for your order, {{1}}! Your confirmation number is {{2}}. If you have any questions, please use the buttons below to contact support. Thank you for being a customer!",
+    "example": {
+      "body_text": [
+        [
+          "Pablo","860198-230332"
+        ]
+      ]
+    }
+  },
+  {
+    "type": "BUTTONS",
+    "buttons": [
+      {
+        "type": "PHONE_NUMBER",
+        "text": "Call",
+        "phone_number": "15550051310"
+      },
+      {
+        "type": "URL",
+        "text": "Contact Support",
+        "url": "https://www.luckyshrub.com/support"
+      }
+    ]
+  }
+]
+Refer to the Template Components document for a list of all possible components and their requirements as well as samples and example queries.
+
+Note that templates categorized as AUTHENTICATION have unique component requirements. See Authentication Templates.
+
+
+Admin credentials 
+
+username: vinayd098@gmail.com
+Password : Vinay@4499
+
+
+counsellor credentials 
+username :  vinayhari789@gmail.com
+Password :  Vinay@4499

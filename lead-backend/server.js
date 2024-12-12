@@ -2,13 +2,17 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser'); // Import cookie-parser
+
+
 const db = require('./models');
+
+
 const leadRoute = require('./routes/leadRoutes');
 const authRoute = require('./routes/authRoutes');
 const adminRoute = require('./routes/adminRoutes');
 const counsellorRoute = require('./routes/counsellorRoutes');
 // const counsellorRoute = require('./routes/counsellorRoutes');
-
+const whatsAppRoute = require('./routes/whatsAppRoutes');
 const app = express();
 
 
@@ -35,6 +39,7 @@ app.use('/api/lead', leadRoute);
 app.use('/api/auth', authRoute);
 app.use('/api/admin', adminRoute);
 app.use('/api/counsellor', counsellorRoute);
+app.use('/api/whatsapp', whatsAppRoute);
 
 // const PORT = 3003;
 const PORT = 3004;      //api.leads.laragrooming.com

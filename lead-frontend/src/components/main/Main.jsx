@@ -88,6 +88,7 @@ import ReassignLeadToCounsellor from './admin/ReassignLeadToCounsellor';
 import UpdatePasswordForm from './auth/UpdatePasswordForm';
 import ProtectedRoute from '../header/ProtectedRoute';
 import UpdateCounsellorDetails from './counsellor/UpdateCounsellorDetails';
+import CreateTemplateForm from './admin/CreateTemplateForm';
 
 const Main = ({ role, isLoggedIn, passwordUpdated }) => {
   return (
@@ -137,6 +138,11 @@ const Main = ({ role, isLoggedIn, passwordUpdated }) => {
             <Route path="/admin-dashboard" element={
               <ProtectedRoute isLoggedIn={isLoggedIn} passwordUpdated={passwordUpdated}>
                 <AdminDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/create-template" element={
+              <ProtectedRoute isLoggedIn={isLoggedIn} passwordUpdated={passwordUpdated}>
+                <CreateTemplateForm />
               </ProtectedRoute>
             } />
             <Route path="/upload-leads" element={

@@ -13,6 +13,7 @@ const AdminNavbar = () => {
       <Nav.Link as={Link} to="/upload-leads">Upload Leads</Nav.Link>
       <Nav.Link as={Link} to="/joined-leads">Joined Leads</Nav.Link>
       <Nav.Link as={Link} to="/create-account-counsellor">Create Account</Nav.Link>
+      <Nav.Link as={Link} to="/create-template">Create Template</Nav.Link>
     </>
   );
 };
