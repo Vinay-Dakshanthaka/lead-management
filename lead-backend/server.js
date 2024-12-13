@@ -13,6 +13,7 @@ const adminRoute = require('./routes/adminRoutes');
 const counsellorRoute = require('./routes/counsellorRoutes');
 // const counsellorRoute = require('./routes/counsellorRoutes');
 const whatsAppRoute = require('./routes/whatsAppRoutes');
+const whatsappWebhookRoute = require('./routes/whatsappWebhookRoutes')
 const app = express();
 
 
@@ -40,6 +41,8 @@ app.use('/api/auth', authRoute);
 app.use('/api/admin', adminRoute);
 app.use('/api/counsellor', counsellorRoute);
 app.use('/api/whatsapp', whatsAppRoute);
+app.use('/api/whatsAppWebhook', whatsappWebhookRoute);
+
 
 // const PORT = 3003;
 const PORT = 3004;      //api.leads.laragrooming.com

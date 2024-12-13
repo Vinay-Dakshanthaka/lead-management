@@ -1,7 +1,7 @@
 OFFICIAL DOCUMENTATIN LINK -->  https://developers.facebook.com/docs/whatsapp/business-management-api/message-templates#template-categories
 ------------------------------------
 
-
+[   https://developers.facebook.com/apps/576315308123146/whatsapp-business/wa-dev-console/?business_id=1093368219023210   ]
 
 
 Create and Manage Templates
