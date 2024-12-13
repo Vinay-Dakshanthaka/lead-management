@@ -8,7 +8,7 @@ const createWhatsAppTemplate = async (req, res) => {
 
         // Template payload
         const templateData = {
-            name: "for_testing_purpose", // Template name
+            name: "for_testing_purpose_in_leads", // Template name
             category: "UTILITY", // Template category
             allow_category_change: true, // Allow category reassignment
             language: "en_US", // Language and locale code
