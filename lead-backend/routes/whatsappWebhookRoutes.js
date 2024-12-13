@@ -4,19 +4,20 @@ const express = require('express');
 const webhookrouter = express.Router();
 
 // Facebook webhook verification
+const token = process.env.WHATSAPP_TOKEN;
+const mytoken = process.env.CHECK_TOKEN;
+
 webhookrouter.get('/webhook', (req, res) => {
-    const VERIFY_TOKEN = process.env.WHATSAPP_TOKEN; // Set this token in your environment variables
+    let mode = req.query["hub.mode"];
+    let challenge = req.query["hub.challenge"];
+    let token = req.query["hub.verify_token"];
 
-    const mode = req.query['hub.mode'];
-    const token = req.query['hub.verify_token'];
-    const challenge = req.query['hub.challenge'];
-
-    if (mode && token && mode === 'subscribe' && token === VERIFY_TOKEN) {
-        console.log("Webhook verification successful.");
-        return res.status(200).send(challenge);
-    } else {
-        console.error("Webhook verification failed.");
-        return res.sendStatus(403);
+    if (mode && token) {
+        if (mode === "subscribe" && token === mytoken) {
+            res.status(200).send(challenge);
+        } else {
+            res.status(403);
+        }
     }
 });
 
