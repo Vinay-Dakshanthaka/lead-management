@@ -8,6 +8,7 @@ const CounsellorNavbar = () => {
       {/* <Nav.Link as={Link} to="/overview">Overview</Nav.Link> */}
       <Nav.Link as={Link} to="/counsellor-dashboard">Dashboard</Nav.Link>
       <Nav.Link as={Link} to="/joined-leads">Joined Leads</Nav.Link>
+      <Nav.Link as={Link} to="/create-template">Templates</Nav.Link>
       {/* <Nav.Link as={Link} to="/lead-form/:lead_id">Joined Leads</Nav.Link> */}
     </>
   );

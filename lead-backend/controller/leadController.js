@@ -341,7 +341,7 @@ const reAssignLead = async (req, res) => {
 
 const updateLeadDetails = async (req, res) => {
     try {
-        const counsellor_id = req.counsellor_id; // Assume this is extracted from token middleware or request body
+        const counsellor_id = req.counsellor_id; 
         console.log('counsellor id ', counsellor_id)
         const {
             lead_id,

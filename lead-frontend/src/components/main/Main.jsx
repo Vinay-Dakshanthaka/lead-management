@@ -89,6 +89,8 @@ import UpdatePasswordForm from './auth/UpdatePasswordForm';
 import ProtectedRoute from '../header/ProtectedRoute';
 import UpdateCounsellorDetails from './counsellor/UpdateCounsellorDetails';
 import CreateTemplateForm from './admin/CreateTemplateForm';
+import WhatsAppLeadForm from './whatsAppLeads/WhatsAppLeadForm';
+import WhatsAppLeadsTable from './whatsAppLeads/WhatsAppLeadsTable';
 
 const Main = ({ role, isLoggedIn, passwordUpdated }) => {
   return (
@@ -99,6 +101,9 @@ const Main = ({ role, isLoggedIn, passwordUpdated }) => {
           <ProtectedRoute isLoggedIn={isLoggedIn} passwordUpdated={passwordUpdated}>
             <Overview />
           </ProtectedRoute>
+        } />
+        <Route path="/lead-form" element={
+            <WhatsAppLeadForm />
         } />
         <Route path="/reports" element={
           <ProtectedRoute isLoggedIn={isLoggedIn} passwordUpdated={passwordUpdated}>
@@ -140,6 +145,11 @@ const Main = ({ role, isLoggedIn, passwordUpdated }) => {
                 <AdminDashboard />
               </ProtectedRoute>
             } />
+            <Route path="/whatsApp-leads" element={
+              <ProtectedRoute isLoggedIn={isLoggedIn} passwordUpdated={passwordUpdated}>
+                <WhatsAppLeadsTable />
+              </ProtectedRoute>
+            } />
             <Route path="/create-template" element={
               <ProtectedRoute isLoggedIn={isLoggedIn} passwordUpdated={passwordUpdated}>
                 <CreateTemplateForm />
@@ -175,11 +185,19 @@ const Main = ({ role, isLoggedIn, passwordUpdated }) => {
 
         {/* Counsellor Routes */}
         {role === 'COUNSELLOR' && (
+          <>
           <Route path="/counsellor-dashboard" element={
             <ProtectedRoute isLoggedIn={isLoggedIn} passwordUpdated={passwordUpdated}>
               <CounsellorDashboard />
             </ProtectedRoute>
           } />
+          <Route path="/create-template" element={
+              <ProtectedRoute isLoggedIn={isLoggedIn} passwordUpdated={passwordUpdated}>
+                <CreateTemplateForm />
+              </ProtectedRoute>
+            } />
+          </>
+          
         )}
 
         {/* Auth Routes */}

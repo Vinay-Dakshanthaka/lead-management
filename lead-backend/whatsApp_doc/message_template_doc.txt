@@ -4,6 +4,8 @@ OFFICIAL DOCUMENTATIN LINK -->  https://developers.facebook.com/docs/whatsapp/bu
 [   https://developers.facebook.com/apps/576315308123146/whatsapp-business/wa-dev-console/?business_id=1093368219023210   ]
 
 
+https://developers.facebook.com/docs/whatsapp/cloud-api/guides/send-message-templates/#media-based
+
 Create and Manage Templates
 -------------------------------------------------------------------------
 Templates are used when sending template messages with either the Cloud API, hosted by Meta, or the On-Premises API. Cloud API reviews templates and variable parameters using machine learning to protect the security and integrity of Cloud API services. When Cloud API reviews templates and variable text, no information is shared with WhatsApp.
@@ -113,3 +115,35 @@ Password : Vinay@4499
 counsellor credentials 
 username :  vinayhari789@gmail.com
 Password :  Vinay@4499
+
+
+
+
+ Webhook payload received: {
+   "object": "whatsapp_business_account",
+   "entry": [
+     {
+       "id": "486025151253154",
+       "changes": [
+         {
+           "value": {
+             "messaging_product": "whatsapp",
+             "metadata": {
+               "display_phone_number": "15551616489",
+               "phone_number_id": "487309167791872"
+             },
+             "statuses": [
+               {
+                 "id": "wamid.HBgMOTE5ODQ1OTY0NDk5FQIAERgSNDA1MjU3N0NEODdDMkJBODIzAA==",
+                 "status": "read",
+                 "timestamp": "1734946602",
+                 "recipient_id": "919845964499"
+               }
+             ]
+           },
+           "field": "messages"
+         }
+       ]
+     }
+   ]
+ }

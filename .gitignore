@@ -4,4 +4,6 @@ lead-backend/.env
 
 lead-frontend/node_modules
 
+lead-backend/uploads
+
 .env
