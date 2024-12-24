@@ -577,6 +577,102 @@ const sendMediaTemplateWithButton = async (req, res) => {
     }
 };
 
+const sendLaraJan2025BatchTemplate = async (req, res) => {
+    try {
+        const {
+            to,
+            templateName,
+            languageCode,
+            imageUrl,
+        } = req.body; // Destructure necessary data from the request body
+
+        const accessToken = process.env.WHATSAPP_TOKEN; // WhatsApp API token
+        const phoneNumberId = process.env.PHONE_NUMBER_ID; // WhatsApp Business Phone Number ID
+
+        // Construct the payload
+        const payload = {
+            messaging_product: "whatsapp",
+            recipient_type: "individual",
+            to,
+            type: "template",
+            template: {
+                name: templateName,
+                language: {
+                    code: languageCode,
+                },
+                components: [
+                    {
+                        type: "header",
+                        parameters: [
+                            {
+                                type: "image",
+                                image: {
+                                    link: imageUrl,
+                                },
+                            },
+                        ],
+                    },
+                    {
+                        type: "body",
+                        // parameters: [
+                        //     {
+                        //         type: "text",
+                        //         text: `Hello ${userName}!`,
+                        //     },
+                        //     {
+                        //         type: "text",
+                        //         text: websiteLink,
+                        //     },
+                        // ],
+                    },
+                    // {
+                    //     type: "button",
+                    //     sub_type: "url",
+                    //     index: "0",
+                    //     parameters: [
+                    //         {
+                    //             type: "text",
+                    //             text: websiteLink,
+                    //         },
+                    //     ],
+                    // },
+                ],
+            },
+        };
+
+        // Make the POST request
+        const response = await axios.post(
+            `https://graph.facebook.com/v21.0/${phoneNumberId}/messages`,
+            payload,
+            {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+
+        // Return a success response
+        return res.status(200).json({
+            success: true,
+            message: "Media template message with button sent successfully.",
+            response: response.data,
+        });
+    } catch (error) {
+        console.error(
+            "Error sending media template message with button:",
+            error.response ? error.response.data : error.message
+        );
+
+        // Handle errors and send appropriate response
+        return res.status(500).json({
+            success: false,
+            message: "Failed to send media template message with button.",
+            error: error.response?.data || error.message,
+        });
+    }
+};
+
 
 const uploadTemplateImage = async (req, res, next) => {
     const counsellor_id = req.counsellor_id;
@@ -703,6 +799,7 @@ module.exports = {
     createWhatsAppTemplate,
     checkTemplateStatus,
     uploadMediaToWhatsApp,
+    sendLaraJan2025BatchTemplate,
     registerPhoneNumber,
     sendMediaTemplateMessage,
     sendMediaTemplateWithButton,
