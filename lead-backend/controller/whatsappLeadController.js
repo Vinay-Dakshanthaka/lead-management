@@ -69,12 +69,15 @@ const getAllWhatsAppLeads = async (req, res) => {
 
         const role = user.role;
 
-        // Check if the role is COUNSELLOR
+        // Check if the role is ADMIN
         if (role !== 'ADMIN') {
             return res.status(403).send({ message: "Access denied. Insufficient permissions." });
         }
-        // Fetch all WhatsApp leads
-        const leads = await WhatsAppLead.findAll();
+
+        // Fetch all WhatsApp leads in descending order
+        const leads = await WhatsAppLead.findAll({
+            order: [["lead_id", "DESC"]], 
+        });
 
         // Check if leads exist
         if (leads.length === 0) {

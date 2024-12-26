@@ -26,6 +26,8 @@ const TemplateDetails = ({ template, onBack }) => {
         }
       );
 
+      console.log("Response : ", response.data)
+
       // Filter images by the selected template name
       const filteredImages = response.data.templateImages.filter(
         (image) => image.template_name === template.name
@@ -55,31 +57,48 @@ const TemplateDetails = ({ template, onBack }) => {
       {!loading && !error && (
         <div className="row">
           {images.length > 0 ? (
-            images.map((image) => (
-              <div className="col-md-4 col-sm-6 mb-4" key={image.id}>
-                <div className="card h-100">
-                  <img
-                    src={image.image_url}
-                    alt={image.template_name}
-                    className="card-img-top"
-                  />
-                  <div className="card-body text-center">
-                    <input
-                      type="checkbox"
-                      checked={selectedImage === image.image_url}
-                      onChange={() => handleImageSelect(image.image_url)}
-                    />{' '}
-                    Select Image
+            images.map((media) => {
+              const isImage = /\.(png|jpe?g|gif|bmp|webp)$/i.test(media.image_url); // Check if it's an image
+              const isVideo = /\.(mp4|webm|ogg|avi|mov|mkv)$/i.test(media.image_url); // Check if it's a video
+
+              return (
+                <div className="col-md-4 col-sm-6 mb-4" key={media.id}>
+                  <div className="card h-100">
+                    {isImage && (
+                      <img
+                        src={media.image_url}
+                        alt={media.template_name}
+                        className="card-img-top"
+                      />
+                    )}
+                    {isVideo && (
+                      <video
+                        controls
+                        className="card-img-top"
+                        style={{ width: '100%', height: 'auto' }}
+                      >
+                        <source src={media.image_url} type="video/mp4" />
+                        Your browser does not support the video tag.
+                      </video>
+                    )}
+                    <div className="card-body text-center">
+                      <input
+                        type="checkbox"
+                        checked={selectedImage === media.image_url}
+                        onChange={() => handleImageSelect(media.image_url)}
+                      />{' '}
+                      Select {isImage ? 'Image' : 'Video'}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           ) : (
-            <div className="text-center w-100">No images found for this template.</div>
+            <div className="text-center w-100">No media found for this template.</div>
           )}
         </div>
       )}
-      <LeadDetails selectedImage={selectedImage} templateName={template.name} templateLanguage={template.language}/>
+      <LeadDetails selectedImage={selectedImage} templateName={template.name} templateLanguage={template.language} />
     </div>
   );
 };

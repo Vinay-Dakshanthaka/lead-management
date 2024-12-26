@@ -673,6 +673,103 @@ const sendLaraJan2025BatchTemplate = async (req, res) => {
     }
 };
 
+const sendVideoTemplate = async (req, res) => {
+    try {
+        const {
+            to,
+            templateName,
+            languageCode,
+            videoUrl,
+        } = req.body; // Destructure necessary data from the request body
+
+        const accessToken = process.env.WHATSAPP_TOKEN; // WhatsApp API token
+        const phoneNumberId = process.env.PHONE_NUMBER_ID; // WhatsApp Business Phone Number ID
+
+        // Construct the payload
+        const payload = {
+            messaging_product: "whatsapp",
+            recipient_type: "individual",
+            to,
+            type: "template",
+            template: {
+                name: templateName,
+                language: {
+                    code: languageCode,
+                },
+                components: [
+                    {
+                        type: "header",
+                        parameters: [
+                            {
+                                type: "video",
+                                video: {
+                                    link: videoUrl,
+                                },
+                            },
+                        ],
+                    },
+                    {
+                        type: "body",
+                        // parameters: [
+                        //     {
+                        //         type: "text",
+                        //         text: `Hello ${userName}!`,
+                        //     },
+                        //     {
+                        //         type: "text",
+                        //         text: websiteLink,
+                        //     },
+                        // ],
+                    },
+                    // {
+                    //     type: "button",
+                    //     sub_type: "url",
+                    //     index: "0",
+                    //     parameters: [
+                    //         {
+                    //             type: "text",
+                    //             text: websiteLink,
+                    //         },
+                    //     ],
+                    // },
+                ],
+            },
+        };
+
+        // Make the POST request
+        const response = await axios.post(
+            `https://graph.facebook.com/v21.0/${phoneNumberId}/messages`,
+            payload,
+            {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+
+        // Return a success response
+        return res.status(200).json({
+            success: true,
+            message: "Media template message with video sent successfully.",
+            response: response.data,
+        });
+    } catch (error) {
+        console.error(
+            "Error sending media template message with video:",
+            error.response ? error.response.data : error.message
+        );
+
+        // Handle errors and send appropriate response
+        return res.status(500).json({
+            success: false,
+            message: "Failed to send media template message with video.",
+            error: error.response?.data || error.message,
+        });
+    }
+};
+
+
 
 const uploadTemplateImage = async (req, res, next) => {
     const counsellor_id = req.counsellor_id;
@@ -693,7 +790,7 @@ const uploadTemplateImage = async (req, res, next) => {
 
         // Upload file to S3
         const params = {
-            Bucket: 'real_estate', // Adjust bucket name as needed
+            Bucket: 'real_estate', // Bucket Name
             Key: fileKey,
             Body: req.file.buffer,
             ACL: 'public-read',
@@ -721,6 +818,112 @@ const uploadTemplateImage = async (req, res, next) => {
         next(error);
     }
 };
+
+const uploadTemplateVideo = async (req, res, next) => {
+    const counsellor_id = req.counsellor_id;
+    const { template_name } = req.body;
+
+    if (!req.file) {
+        return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    if (!counsellor_id || !template_name) {
+        return res.status(400).json({ message: 'Counsellor ID and template name are required' });
+    }
+
+    try {
+        // Generate file key for DigitalOcean Spaces
+        const clientName = process.env.CLIENT_NAME || 'default_client';
+        const fileKey = `${clientName}/template_videos/${uuidv4()}_${req.file.originalname.replace(/\s+/g, '')}`;
+
+        // Upload video to DigitalOcean Spaces
+        const params = {
+            Bucket: 'real_estate', //Bucket name 
+            Key: fileKey,
+            Body: req.file.buffer,
+            ACL: 'public-read',
+            ContentType: req.file.mimetype,
+        };
+
+        const uploadResult = await s3.upload(params).promise();
+
+        // Retrieve the uploaded video's URL
+        const videoUrl = uploadResult.Location;
+
+        // Save video data in TemplateVideo model
+        const templateImage = await TemplateImage.create({
+            counsellor_id,
+            template_name,
+            video_url: videoUrl,
+        });
+
+        return res.status(200).json({
+            message: 'Template video uploaded and saved successfully',
+            templateImage,
+        });
+    } catch (error) {
+        console.error('Error uploading template video:', error);
+        next(error);
+    }
+};
+
+const uploadTemplateMedia = async (req, res, next) => {
+    const counsellor_id = req.counsellor_id;
+    const { template_name } = req.body;
+
+    if (!req.file) {
+        return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    if (!counsellor_id || !template_name) {
+        return res.status(400).json({ message: 'Counsellor ID and template name are required' });
+    }
+
+    try {
+        // Determine file type (image or video) and set folder accordingly
+        const isImage = req.file.mimetype.startsWith('image/');
+        const isVideo = req.file.mimetype.startsWith('video/');
+
+        if (!isImage && !isVideo) {
+            return res.status(400).json({ message: 'Unsupported file type. Only images and videos are allowed.' });
+        }
+
+        const clientName = process.env.CLIENT_NAME || 'default_client';
+        const folder = isImage ? 'template_images' : 'template_videos';
+        const fileKey = `${clientName}/${folder}/${uuidv4()}_${req.file.originalname.replace(/\s+/g, '')}`;
+
+        // Upload file to S3
+        const params = {
+            Bucket: 'real_estate', // Bucket Name
+            Key: fileKey,
+            Body: req.file.buffer,
+            ACL: 'public-read',
+            ContentType: req.file.mimetype,
+        };
+
+        const uploadResult = await s3.upload(params).promise();
+
+        // Uploaded file URL
+        const fileUrl = uploadResult.Location;
+
+        // Save file data in TemplateMedia model
+        const templateMedia = await TemplateImage.create({
+            counsellor_id,
+            template_name,
+            image_url: fileUrl,
+            // file_type: isImage ? 'IMAGE' : 'VIDEO',
+        });
+
+        return res.status(200).json({
+            message: `${isImage ? 'Image' : 'Video'} uploaded and saved successfully`,
+            templateMedia,
+        });
+    } catch (error) {
+        console.error('Error uploading template media:', error);
+        next(error);
+    }
+};
+
 
 const getAllTemplateImages = async (req, res, next) => {
     try {
@@ -804,7 +1007,10 @@ module.exports = {
     sendMediaTemplateMessage,
     sendMediaTemplateWithButton,
     uploadTemplateImage,
+    uploadTemplateVideo,
+    uploadTemplateMedia,
     getAllTemplateImages,
     getTemplateImageById,
-    getTemplateImagesByCounsellorId
+    getTemplateImagesByCounsellorId,
+    sendVideoTemplate
 };

@@ -28,7 +28,10 @@ whatsAppRoutes.post('/registerPhoneNumber',  whatsAppController.registerPhoneNum
 whatsAppRoutes.post('/sendMediaTemplateMessage',  whatsAppController.sendMediaTemplateMessage);
 whatsAppRoutes.post('/sendMediaTemplateWithButton',  whatsAppController.sendMediaTemplateWithButton);
 whatsAppRoutes.post('/sendLaraJan2025BatchTemplate',  whatsAppController.sendLaraJan2025BatchTemplate);
+whatsAppRoutes.post('/sendVideoTemplate',  whatsAppController.sendVideoTemplate);
 whatsAppRoutes.post('/uploadTemplateImage', upload.single('image'), authenticateToken, whatsAppController.uploadTemplateImage);
+whatsAppRoutes.post('/uploadTemplateMedia', upload.single('file'),authenticateToken, whatsAppController.uploadTemplateMedia);
+
 whatsAppRoutes.get('/getAllTemplateImages',  whatsAppController.getAllTemplateImages);
 whatsAppRoutes.get('/getTemplateImageById/:id',  whatsAppController.getTemplateImageById);
 whatsAppRoutes.get('/getTemplateImagesByCounsellorId', authenticateToken, whatsAppController.getTemplateImagesByCounsellorId);

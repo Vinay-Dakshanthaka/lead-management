@@ -1,22 +1,23 @@
-### **Conclusion**
-
-1. **Multiple Sender Phone Numbers**:
-   - You can configure multiple **sender phone numbers** in your WhatsApp Business Account (WABA) through the Meta Developer Console. 
-   - Each phone number will have a unique `phone_number_id`.
-
-2. **Dynamic Use of Phone Numbers**:
-   - You can dynamically specify the `phone_number_id` in the WhatsApp Cloud API endpoint:
-     ```
-     POST https://graph.facebook.com/v17.0/<phone_number_id>/messages
-     ```
-   - By dynamically changing `<phone_number_id>` in your web application, you can send messages from different configured numbers.
-
-3. **Integration in Application**:
-   - Use your application's logic (e.g., Node.js backend) to:
-     - Fetch the appropriate `phone_number_id` based on your lead’s interest or requirements.
-     - Send the API request using the selected `phone_number_id` for messaging.
-
-4. **Flexibility**:
-   - This approach allows you to target leads with specific sender numbers as per your business logic, such as:
-     - Region-based numbers.
-     - Dedicated numbers for certain campaigns or agents.
+ ### **Conclusion**
+ 
+ 1. **Multiple Sender Phone Numbers**:
+    - You can configure multiple **sender phone numbers** in your WhatsApp Business Account (WABA) through the Meta Developer Console. 
+    - Each phone number will have a unique `phone_number_id`.
+ 
+ 2. **Dynamic Use of Phone Numbers**:
+    - You can dynamically specify the `phone_number_id` in the WhatsApp Cloud API endpoint:
+      ```
+      POST https://graph.facebook.com/v17.0/<phone_number_id>/messages
+      ```
+    - By dynamically changing `<phone_number_id>` in your web application, you can send messages from different configured numbers.
+ 
+ 3. **Integration in Application**:
+    - Use your application's logic (e.g., Node.js backend) to:
+      - Fetch the appropriate `phone_number_id` based on your lead’s interest or requirements.
+      - Send the API request using the selected `phone_number_id` for messaging.
+ 
+ 4. **Flexibility**:
+    - This approach allows you to target leads with specific sender numbers as per your business logic, such as:
+      - Region-based numbers.
+      - Dedicated numbers for certain campaigns or agents.
+ 

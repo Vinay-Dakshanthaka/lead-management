@@ -4,6 +4,7 @@ import { baseURL } from '../../config';
 import toast from 'react-hot-toast';
 
 const LeadDetails = ({ selectedImage, templateName, templateLanguage }) => {
+
   const [leads, setLeads] = useState([]);
   const [allSelected, setAllSelected] = useState(false);
   const [selectedLeads, setSelectedLeads] = useState([]);
@@ -56,37 +57,109 @@ const LeadDetails = ({ selectedImage, templateName, templateLanguage }) => {
     const to = `91${lead_phone}`;
     const payload = {
       to,
-      templateName: templateName, // Replace with your template name
-      languageCode: templateLanguage, // Replace with the language code
-      imageUrl: selectedImage, // Include selected image URL
+      templateName: templateName,
+      languageCode: templateLanguage,
+      imageUrl: selectedImage, 
       userName: lead_name,
       websiteLink: 'https://lara.co.in',
     };
 
-    try {
-      const response = await axios.post(
-        `${baseURL}/api/whatsapp/sendMediaTemplateWithButton`,
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        }
-      );
+    if(templateName === 'lara_jan2025_batch'){
+      const laraTemplatepayload = {
+        to,
+        templateName: templateName, 
+        languageCode: templateLanguage, 
+        imageUrl: selectedImage, 
+        // userName: lead_name,
+        // websiteLink: 'https://lara.co.in',
+      };
 
-      setMessageStatus((prev) => ({
-        ...prev,
-        [lead.lead_id]: 'success',
-      }));
-      toast.success(`Message sent to ${lead_name}`);
-    } catch (error) {
-      console.error('Error sending message:', error);
-      setMessageStatus((prev) => ({
-        ...prev,
-        [lead.lead_id]: 'failure',
-      }));
-      toast.error(`Failed to send message to ${lead_name}`);
+      try {
+        const response = await axios.post(
+          `${baseURL}/api/whatsapp/sendLaraJan2025BatchTemplate`,
+          laraTemplatepayload,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+          }
+        );
+        console.log("to phone ", to)
+        setMessageStatus((prev) => ({
+          ...prev,
+          [lead.lead_id]: 'success',
+        }));
+        toast.success(`Message sent to ${lead_name}`);
+      } catch (error) {
+        console.error('Error sending message:', error);
+        setMessageStatus((prev) => ({
+          ...prev,
+          [lead.lead_id]: 'failure',
+        }));
+        toast.error(`Failed to send message to ${lead_name}`);
+      }
+    }else if(templateName === 'video_template'){
+      const laraTemplatepayload = {
+        to,
+        templateName: templateName, 
+        languageCode: templateLanguage, 
+        videoUrl: selectedImage, 
+        // userName: lead_name,
+        // websiteLink: 'https://lara.co.in',
+      };
+
+      try {
+        const response = await axios.post(
+          `${baseURL}/api/whatsapp/sendVideoTemplate`,
+          laraTemplatepayload,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+          }
+        );
+        // console.log("to phone ", to)
+        setMessageStatus((prev) => ({
+          ...prev,
+          [lead.lead_id]: 'success',
+        }));
+        toast.success(`Message sent to ${lead_name}`);
+      } catch (error) {
+        console.error('Error sending message:', error);
+        setMessageStatus((prev) => ({
+          ...prev,
+          [lead.lead_id]: 'failure',
+        }));
+        toast.error(`Failed to send message to ${lead_name}`);
+      }
+    }else{
+      try {
+        console.log("to phone ", to)
+        const response = await axios.post(
+          `${baseURL}/api/whatsapp/sendMediaTemplateWithButton`,
+          payload,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+          }
+        );
+       
+        setMessageStatus((prev) => ({
+          ...prev,
+          [lead.lead_id]: 'success',
+        }));
+        toast.success(`Message sent to ${lead_name}`);
+      } catch (error) {
+        console.error('Error sending message:', error);
+        setMessageStatus((prev) => ({
+          ...prev,
+          [lead.lead_id]: 'failure',
+        }));
+        toast.error(`Failed to send message to ${lead_name}`);
+      }
     }
+
   };
 
 
