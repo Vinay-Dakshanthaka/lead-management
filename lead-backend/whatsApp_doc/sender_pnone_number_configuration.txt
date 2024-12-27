@@ -21,3 +21,107 @@
       - Region-based numbers.
       - Dedicated numbers for certain campaigns or agents.
  
+
+ const express = require('express');
+const axios = require('axios');
+const fs = require('fs');
+const path = require('path');
+
+const app = express();
+app.use(express.json());
+
+// Replace with your actual values
+const APP_ID = '<YOUR_APP_ID>';
+const USER_ACCESS_TOKEN = '<USER_ACCESS_TOKEN>';
+const GRAPH_API_URL = 'https://graph.facebook.com/v21.0';
+
+app.post('/upload-template', async (req, res) => {
+  const { filePath, fileName } = req.body;
+
+  if (!filePath || !fileName) {
+    return res.status(400).json({ error: 'filePath and fileName are required' });
+  }
+
+  try {
+    // Get file details
+    const fileStats = fs.statSync(filePath);
+    const fileLength = fileStats.size;
+    const fileType = getFileType(fileName);
+
+    if (!fileType) {
+      return res.status(400).json({ error: 'Invalid file type' });
+    }
+
+    // Step 1: Start an upload session
+    const sessionResponse = await axios.post(
+      `${GRAPH_API_URL}/${APP_ID}/uploads`,
+      null,
+      {
+        params: {
+          file_name: fileName,
+          file_length: fileLength,
+          file_type: fileType,
+          access_token: USER_ACCESS_TOKEN,
+        },
+      }
+    );
+
+    const uploadSessionId = sessionResponse.data.id.split(':')[1];
+    console.log('Upload Session ID:', uploadSessionId);
+
+    // Step 2: Start the upload
+    const fileStream = fs.createReadStream(filePath);
+    const uploadResponse = await axios.post(
+      `${GRAPH_API_URL}/upload:${uploadSessionId}`,
+      fileStream,
+      {
+        headers: {
+          Authorization: `OAuth ${USER_ACCESS_TOKEN}`,
+          'file_offset': '0',
+        },
+      }
+    );
+
+    const fileHandle = uploadResponse.data.h;
+    console.log('Uploaded File Handle:', fileHandle);
+
+    // Step 3: Use the file handle to create and send the template
+    // (Example code, adjust this based on your API and template structure)
+    const templateResponse = await axios.post(
+      `${GRAPH_API_URL}/<TEMPLATE_ENDPOINT>`,
+      {
+        file_handle: fileHandle,
+        template_data: { /* Template details here */ },
+      },
+      {
+        headers: {
+          Authorization: `OAuth ${USER_ACCESS_TOKEN}`,
+        },
+      }
+    );
+
+    res.status(200).json({ message: 'Template created and sent for approval', data: templateResponse.data });
+  } catch (error) {
+    console.error('Error:', error.response ? error.response.data : error.message);
+    res.status(500).json({ error: 'Failed to upload template' });
+  }
+});
+
+// Helper function to get file type
+function getFileType(fileName) {
+  const ext = path.extname(fileName).toLowerCase();
+  switch (ext) {
+    case '.pdf':
+      return 'application/pdf';
+    case '.jpeg':
+    case '.jpg':
+      return 'image/jpeg';
+    case '.png':
+      return 'image/png';
+    default:
+      return null;
+  }
+}
+
+const PORT = 3000;
+app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));

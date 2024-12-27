@@ -3,10 +3,12 @@ const whatsAppRoutes = express.Router();
 const axios = require('axios');
 const whatsAppController = require('../controller/whatsAppController');
 const FormData = require("form-data");
+const fs = require('fs');
 const multer = require('multer');
 const path = require('path');
 const authenticateToken  = require('../middlewares/authenticateToken')
-
+const { v4: uuidv4 } = require('uuid');
+const tmp = require('tmp');
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
       cb(null, "uploads/"); // Directory for uploads
@@ -196,6 +198,126 @@ whatsAppRoutes.post("/generateTemplatePayload", (req, res) => {
     res.status(500).json({ error: "Failed to generate template payload" });
   }
 });
+
+const APP_ID =  process.env.APP_ID;
+const USER_ACCESS_TOKEN = process.env.WHATSAPP_TOKEN;
+const GRAPH_API_URL = 'https://graph.facebook.com/v21.0';
+
+whatsAppRoutes.post('/upload-template-with-image', async (req, res) => {
+  const { imageUrl, templateName, bodyText } = req.body;
+
+  // Validate the request data
+  if (!imageUrl || !templateName || !bodyText) {
+    return res.status(400).json({ error: 'imageUrl, templateName, and bodyText are required' });
+  }
+
+  try {
+    // Step 1: Download the image from the URL
+    const response = await axios.get(imageUrl, { responseType: 'stream' });
+    const tempFile = tmp.fileSync({ postfix: path.extname(imageUrl) });
+    const localFilePath = tempFile.name;
+
+    // Save the image to a local file
+    await new Promise((resolve, reject) => {
+      const fileStream = fs.createWriteStream(localFilePath);
+      response.data.pipe(fileStream);
+      fileStream.on('finish', resolve);
+      fileStream.on('error', reject);
+    });
+
+    console.log(`Image downloaded to ${localFilePath}`);
+
+    // Step 2: Upload the image to Meta
+    const imageFileType = getFileType(localFilePath);
+
+    if (!imageFileType) {
+      throw new Error('Invalid image file type');
+    }
+
+    const formData = new FormData();
+    formData.append('file', fs.createReadStream(localFilePath));
+    formData.append('messaging_product', 'whatsapp');
+    formData.append('type', imageFileType);
+
+    // Upload image to Meta
+    const mediaUploadResponse = await axios.post(
+      `${GRAPH_API_URL}/${APP_ID}/media`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${USER_ACCESS_TOKEN}`,
+          ...formData.getHeaders(),
+        },
+      }
+    );
+
+    const mediaId = mediaUploadResponse.data.id;
+    console.log('Media ID:', mediaId);
+
+    // Step 3: Create the template with the uploaded image
+    const templateResponse = await axios.post(
+      `${GRAPH_API_URL}/${APP_ID}/message_templates`,
+      {
+        name: templateName,
+        language: {
+          code: 'en_US',
+        },
+        category: 'MARKETING',
+        components: [
+          {
+            type: 'HEADER',
+            format: 'IMAGE',
+            example: {
+              header_handle: mediaId,
+            },
+          },
+          {
+            type: 'BODY',
+            text: bodyText,
+          },
+        ],
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${USER_ACCESS_TOKEN}`,
+        },
+      }
+    );
+
+    console.log('Template Created:', templateResponse.data);
+
+    // Clean up the temporary file after uploading
+    fs.unlinkSync(localFilePath);
+
+    // Respond with success message
+    res.status(200).json({
+      message: 'Template with image created and sent for approval',
+      data: templateResponse.data,
+    });
+  } catch (error) {
+    console.error('Error:', error.response ? error.response.data : error.message);
+
+    // Handle error and send response
+    res.status(500).json({
+      error: 'Failed to upload template with image',
+      reason: error.response?.data?.error?.message || error.message,
+    });
+  }
+});
+
+// Helper function to determine the file type from the file extension
+function getFileType(fileName) {
+  const ext = path.extname(fileName).toLowerCase();
+  switch (ext) {
+    case '.jpeg':
+    case '.jpg':
+      return 'image/jpeg';
+    case '.png':
+      return 'image/png';
+    default:
+      return null;
+  }
+}
 
 
 module.exports = whatsAppRoutes;

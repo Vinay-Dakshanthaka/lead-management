@@ -17,6 +17,8 @@
  
  https://developers.facebook.com/docs/whatsapp/cloud-api/guides/send-message-templates/#media-based
  
+ https://developers.facebook.com/docs/graph-api/reference/whats-app-business-hsm/#parameters-2
+
  Create and Manage Templates
  -------------------------------------------------------------------------
  Templates are used when sending template messages with either the Cloud API, hosted by Meta, or the On-Premises API. Cloud API reviews templates and variable parameters using machine learning to protect the security and integrity of Cloud API services. When Cloud API reviews templates and variable text, no information is shared with WhatsApp.
