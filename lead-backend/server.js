@@ -15,7 +15,7 @@ const counsellorRoute = require('./routes/counsellorRoutes');
 const whatsAppRoute = require('./routes/whatsAppRoutes');
 const whatsappWebhookRoute = require('./routes/whatsappWebhookRoutes')
 const whatsappLeadsRoute = require('./routes/whatsappLeadRoutes')
-const leadGroupRoutes = require('./routes/leadGroupRoutes')
+// const leadGroupRoutes = require('./routes/leadGroupRoutes')
 const app = express();
 
 
@@ -45,7 +45,7 @@ app.use('/api/counsellor', counsellorRoute);
 app.use('/api/whatsapp', whatsAppRoute);
 app.use('/api/whatsAppWebhook', whatsappWebhookRoute);
 app.use('/api/whatsappLeads', whatsappLeadsRoute);
-app.use('/api/leadGroup', leadGroupRoutes);
+// app.use('/api/leadGroup', leadGroupRoutes);
 
 
 // const PORT = 3003;
