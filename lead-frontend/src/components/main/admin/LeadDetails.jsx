@@ -64,7 +64,7 @@ const LeadDetails = ({ selectedImage, templateName, templateLanguage }) => {
       websiteLink: 'https://lara.co.in',
     };
 
-    if(templateName === 'lara_jan2025_batch' || templateName === 'sunday_logical_reasoning_free_sessions'  || template === 'join_our_channel'){
+    if(templateName === 'lara_jan2025_batch' || templateName === 'sunday_logical_reasoning_free_sessions'  || templateName === 'join_our_channel'){
       const laraTemplatepayload = {
         to,
         templateName: templateName, 
