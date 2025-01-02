@@ -36,6 +36,7 @@ db.Counsellor = require('./counsellorModel.js')(sequelize, DataTypes);
 db.LeadCounsellor = require('./leadCounsellorModel.js')(sequelize, DataTypes);
 db.TemplateImage = require('./templateImagesModel.js')(sequelize, DataTypes);
 db.WhatsAppLead = require('./whatsappLeadModel.js')(sequelize, DataTypes);
+db.MessageStatus = require('./messageStatusModel.js')(sequelize, DataTypes);
 
 // Define many-to-many association
 // Define associations in index.js or separate model files
