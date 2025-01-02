@@ -310,6 +310,17 @@ const LeadDetails = ({ selectedImage, templateName, templateLanguage }) => {
         );
 
         setLeads(response.data.leads);
+        // Initialize messageCount for each lead
+        const initialCounts = {};
+        response.data.leads.forEach((lead) => {
+          initialCounts[lead.lead_id] = lead.msg_count || 0;
+        });
+        setMessageCount(initialCounts);
+
+        // Fetch message count for the given template and lead_id
+        for (const lead of response.data.leads) {
+          await fetchMessageCount(templateName, lead.lead_id);
+        }
       } catch (error) {
         console.error('Error fetching leads by group:', error);
         toast.error('Failed to fetch leads by group');
@@ -444,7 +455,6 @@ const LeadDetails = ({ selectedImage, templateName, templateLanguage }) => {
     );
   };
 
-
   const sendMessagesToSelected = async () => {
     for (const leadId of selectedLeads) {
       const lead = leads.find((l) => l.lead_id === leadId);
@@ -502,6 +512,7 @@ const LeadDetails = ({ selectedImage, templateName, templateLanguage }) => {
               <th>Joining Status</th>
               <th>Actions</th>
               <th>Status</th>
+              <th>Msg_SentCount</th>
             </tr>
           </thead>
           <tbody>
@@ -535,11 +546,15 @@ const LeadDetails = ({ selectedImage, templateName, templateLanguage }) => {
                       <span className="text-danger">❌ Failed</span>
                     )}
                   </td>
+                  <td>
+                    {/* Display the message count for the current template and lead */}
+                    {messageCount[`${templateName}_${lead.lead_id}`] || 0}
+                  </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="7" className="text-center">
+                <td colSpan="8" className="text-center">
                   No leads available
                 </td>
               </tr>

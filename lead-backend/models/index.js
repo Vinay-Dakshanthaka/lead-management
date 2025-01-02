@@ -38,6 +38,8 @@ db.TemplateImage = require('./templateImagesModel.js')(sequelize, DataTypes);
 db.WhatsAppLead = require('./whatsappLeadModel.js')(sequelize, DataTypes);
 db.LeadGroup = require('./leadGroupModel.js')(sequelize, DataTypes);
 db.LeadGroupMapping = require('./leadGroupMappingModel.js')(sequelize, DataTypes);
+db.LeadMessageHistory = require('./leadMessageHistoryModel.js')(sequelize,DataTypes);
+
 
 // Define many-to-many association
 // Define associations in index.js or separate model files
@@ -79,6 +81,17 @@ db.LeadGroup.belongsTo(db.Counsellor, { foreignKey: 'created_by', as: 'Creator' 
 // sequelize.sync({ force: false }).then(() => {
 //     console.log('Database & tables synced.');
 // });
+
+ 
+    db.Lead.hasMany(db.LeadMessageHistory, {
+        foreignKey: 'lead_id', // This is the foreign key in LeadMessageHistory model
+        as: 'messageHistory', // Alias for accessing related message history
+    });
+
+    db.LeadMessageHistory.belongsTo(db.Lead, {
+        foreignKey: 'lead_id', // This is the foreign key in LeadMessageHistory model
+        as: 'leads', // Alias for accessing the related Lead
+    });
 
 // Export db object
 module.exports = db;

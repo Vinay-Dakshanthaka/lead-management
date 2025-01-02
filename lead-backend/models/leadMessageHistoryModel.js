@@ -26,6 +26,11 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.DATE,
             allowNull: false,
             defaultValue: DataTypes.NOW
+        },
+        msg_sentcount: {
+            type: DataTypes.INTEGER,
+            allowNull: true, // Can be null, should represent the number of messages sent
+            // defaultValue: 0 // Default value of 0 to start with no messages sent
         }
     }, {
         timestamps: false

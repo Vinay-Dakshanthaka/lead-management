@@ -16,6 +16,7 @@ const whatsAppRoute = require('./routes/whatsAppRoutes');
 const whatsappWebhookRoute = require('./routes/whatsappWebhookRoutes')
 const whatsappLeadsRoute = require('./routes/whatsappLeadRoutes')
 const leadGroupRoutes = require('./routes/leadGroupRoutes')
+const leadMessageHistoryRoute = require('./routes/leadMessageHistoryRoutes')
 const app = express();
 
 
@@ -27,7 +28,7 @@ const app = express();
 //   };
   
 // // Enable CORS 
-// app.use(cors(corsOptions)); 
+// // app.use(cors(corsOptions)); 
 
 app.use(cors({
     origin: 'http://localhost:5173', // Client URL
@@ -45,6 +46,7 @@ app.use('/api/counsellor', counsellorRoute);
 app.use('/api/whatsapp', whatsAppRoute);
 app.use('/api/whatsAppWebhook', whatsappWebhookRoute);
 app.use('/api/whatsappLeads', whatsappLeadsRoute);
+app.use('/api/leadMessageHistory', leadMessageHistoryRoute);
 app.use('/api/leadGroup', leadGroupRoutes);
 
 

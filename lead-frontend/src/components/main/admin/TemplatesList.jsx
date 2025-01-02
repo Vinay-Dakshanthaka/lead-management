@@ -172,6 +172,7 @@ const TemplatesList = () => {
             template={selectedTemplate}
             onBack={() => setSelectedTemplate(null)}
           />
+          
         )}
 
       </div>
