@@ -11,6 +11,10 @@ const path = require("path");
 const token = process.env.WHATSAPP_TOKEN;
 const mytoken = process.env.CHECK_TOKEN;
 
+const db = require('../models');
+const MessageStatus = db.MessageStatus;
+
+
 webhookrouter.get('/webhook', (req, res) => {
     let mode = req.query["hub.mode"];
     let challenge = req.query["hub.challenge"];
@@ -26,43 +30,91 @@ webhookrouter.get('/webhook', (req, res) => {
 });
 
 // Handle incoming webhook events
+// webhookrouter.post('/webhook', async (req, res) => {
+//     try {
+//         const bodyParam = req.body;
+//         console.log("Webhook payload received:", JSON.stringify(bodyParam, null, 2));
+
+//         if (bodyParam.object === 'whatsapp_business_account') {
+//             const entries = bodyParam.entry || [];
+
+//             for (const entry of entries) {
+//                 const changes = entry.changes || [];
+
+//                 for (const change of changes) {
+//                     const value = change.value || {};
+
+//                     // Process incoming messages
+//                     if (value.messages && value.messages.length > 0) {
+//                         await handleIncomingMessages(value);
+//                     }
+
+//                     // Process message statuses
+//                     if (value.statuses && value.statuses.length > 0) {
+//                         await handleMessageStatuses(value);
+//                     }
+//                 }
+//             }
+
+//             // Respond to the webhook
+//             return res.sendStatus(200);
+//         } else {
+//             console.error("Invalid webhook event received.");
+//             return res.sendStatus(404);
+//         }
+//     } catch (error) {
+//         console.error("Error processing webhook event:", error);
+//         return res.sendStatus(500);
+//     }
+// });
+
 webhookrouter.post('/webhook', async (req, res) => {
-    try {
-        const bodyParam = req.body;
-        console.log("Webhook payload received:", JSON.stringify(bodyParam, null, 2));
+  try {
+      const bodyParam = req.body;
+      console.log("Webhook payload received:", JSON.stringify(bodyParam, null, 2));
 
-        if (bodyParam.object === 'whatsapp_business_account') {
-            const entries = bodyParam.entry || [];
+      if (bodyParam.object === 'whatsapp_business_account') {
+          const entries = bodyParam.entry || [];
 
-            for (const entry of entries) {
-                const changes = entry.changes || [];
+          for (const entry of entries) {
+              const changes = entry.changes || [];
 
-                for (const change of changes) {
-                    const value = change.value || {};
+              for (const change of changes) {
+                  const value = change.value || {};
 
-                    // Process incoming messages
-                    if (value.messages && value.messages.length > 0) {
-                        await handleIncomingMessages(value);
-                    }
+                  // Process message statuses
+                  if (value.statuses && value.statuses.length > 0) {
+                      for (const status of value.statuses) {
+                          const messageStatusData = {
+                              recipient_id: status.recipient_id,
+                              message_id: status.id,
+                              status: status.status,
+                              timestamp: status.timestamp,
+                              error_code: status.errors?.[0]?.code || null,
+                              error_title: status.errors?.[0]?.title || null,
+                              error_message: status.errors?.[0]?.message || null,
+                              error_details: status.errors?.[0]?.error_data?.details || null,
+                          };
 
-                    // Process message statuses
-                    if (value.statuses && value.statuses.length > 0) {
-                        await handleMessageStatuses(value);
-                    }
-                }
-            }
+                          // Save to the database
+                          await MessageStatus.create(messageStatusData);
+                      }
+                  }
+              }
+          }
 
-            // Respond to the webhook
-            return res.sendStatus(200);
-        } else {
-            console.error("Invalid webhook event received.");
-            return res.sendStatus(404);
-        }
-    } catch (error) {
-        console.error("Error processing webhook event:", error);
-        return res.sendStatus(500);
-    }
+          // Respond to the webhook
+          return res.sendStatus(200);
+      } else {
+          console.error("Invalid webhook event received.");
+          return res.sendStatus(404);
+      }
+  } catch (error) {
+      console.error("Error processing webhook event:", error);
+      return res.sendStatus(500);
+  }
 });
+
 
 const WHATSAPP_API_URL = "https://graph.facebook.com/v21.0"; 
 const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID; // Your WhatsApp Business phone number ID

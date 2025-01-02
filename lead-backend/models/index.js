@@ -39,6 +39,7 @@ db.WhatsAppLead = require('./whatsappLeadModel.js')(sequelize, DataTypes);
 db.LeadGroup = require('./leadGroupModel.js')(sequelize, DataTypes);
 db.LeadGroupMapping = require('./leadGroupMappingModel.js')(sequelize, DataTypes);
 db.LeadMessageHistory = require('./leadMessageHistoryModel.js')(sequelize,DataTypes);
+db.MessageStatus = require('./messageStatusModel.js')(sequelize,DataTypes);
 
 
 // Define many-to-many association
