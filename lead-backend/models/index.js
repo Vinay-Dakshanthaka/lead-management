@@ -36,6 +36,8 @@ db.Counsellor = require('./counsellorModel.js')(sequelize, DataTypes);
 db.LeadCounsellor = require('./leadCounsellorModel.js')(sequelize, DataTypes);
 db.TemplateImage = require('./templateImagesModel.js')(sequelize, DataTypes);
 db.WhatsAppLead = require('./whatsappLeadModel.js')(sequelize, DataTypes);
+db.LeadGroup = require('./leadGroupModel.js')(sequelize, DataTypes);
+db.LeadGroupMapping = require('./leadGroupMappingModel.js')(sequelize, DataTypes);
 
 // Define many-to-many association
 // Define associations in index.js or separate model files
@@ -61,6 +63,16 @@ db.LeadCounsellor.belongsTo(db.Counsellor, { foreignKey: 'counsellor_id', as: 'C
 
 db.Lead.hasMany(db.LeadCounsellor, { foreignKey: 'lead_id' });
 db.Counsellor.hasMany(db.LeadCounsellor, { foreignKey: 'counsellor_id' });
+
+db.LeadGroup.hasMany(db.LeadGroupMapping, {
+    foreignKey: 'group_id',
+    as: 'LeadGroupMappings'
+});
+
+db.LeadGroupMapping.belongsTo(db.Lead, { foreignKey: 'lead_id', as: 'Lead' });
+
+db.LeadGroup.belongsTo(db.Counsellor, { foreignKey: 'created_by', as: 'Creator' });
+
 
 
 // Sync the models with the database (optional if needed)

@@ -73,12 +73,45 @@ const getAllLeadsForCounsellorById = async (req, res) => {
 
         // Fetch the counsellor details from the Counsellor table
         const counsellor = await Counsellor.findByPk(counsellor_id, {
-            attributes: ['counsellor_id', 'name', 'email', 'phone'] // Add other relevant counsellor fields if needed
+            attributes: ['counsellor_id', 'name', 'email', 'phone', 'role'] // Add 'role' field
         });
 
         // If the counsellor is not found, return an error message
         if (!counsellor) {
             return res.status(404).send({ message: "Counsellor not found" });
+        }
+
+        // Check if the counsellor is an ADMIN
+        if (counsellor.role === 'ADMIN') {
+            // Fetch all leads directly from the Lead table
+            const allLeads = await db.Lead.findAll({
+                attributes: ['lead_id', 'name', 'email', 'phone', 'joining_status'] // Specify relevant Lead fields
+            });
+
+            // If no leads are found, return a message
+            if (!allLeads.length) {
+                return res.status(404).send({ message: "No leads found" });
+            }
+
+            // Format the response to include all leads
+            const leadsData = allLeads.map(lead => ({
+                lead_id: lead.lead_id,
+                lead_name: lead.name,
+                lead_email: lead.email,
+                lead_phone: lead.phone,
+                lead_joining_status: lead.joining_status
+            }));
+
+            return res.status(200).send({
+                message: "All leads retrieved successfully",
+                counsellor: {
+                    counsellor_id: counsellor.counsellor_id,
+                    counsellor_name: counsellor.name,
+                    counsellor_email: counsellor.email,
+                    counsellor_phone: counsellor.phone
+                },
+                leads: leadsData
+            });
         }
 
         // Fetch all lead assignments where counsellor_id matches and counsellor is active
@@ -131,6 +164,7 @@ const getAllLeadsForCounsellorById = async (req, res) => {
     }
 };
 
+
 const getCounsellorDetailsById = async (req, res) => {
     try {
         const counsellor_id = req.counsellor_id;
@@ -166,7 +200,7 @@ const getCounsellorDetailsById = async (req, res) => {
 const updateCounsellorDetailsById = async (req, res) => {
     try {
         const counsellor_id = req.counsellor_id;
-        const { name, email, phone} = req.body; // Assuming these fields are sent in the request body
+        const { name, email, phone} = req.body; 
 
         // Fetch the counsellor to check if they exist
         const counsellor = await Counsellor.findByPk(counsellor_id);

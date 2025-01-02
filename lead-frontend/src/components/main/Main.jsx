@@ -91,6 +91,7 @@ import UpdateCounsellorDetails from './counsellor/UpdateCounsellorDetails';
 import CreateTemplateForm from './admin/CreateTemplateForm';
 import WhatsAppLeadForm from './whatsAppLeads/WhatsAppLeadForm';
 import WhatsAppLeadsTable from './whatsAppLeads/WhatsAppLeadsTable';
+import LeadGroupManager from './manageLead/LeadGroupManager';
 
 const Main = ({ role, isLoggedIn, passwordUpdated }) => {
   return (
@@ -180,6 +181,11 @@ const Main = ({ role, isLoggedIn, passwordUpdated }) => {
                 <ReassignLeadToCounsellor />
               </ProtectedRoute>
             } />
+            <Route path="/group-management" element={
+              <ProtectedRoute isLoggedIn={isLoggedIn} passwordUpdated={passwordUpdated}>
+                <LeadGroupManager />
+              </ProtectedRoute>
+            } />
           </>
         )}
 
@@ -194,6 +200,11 @@ const Main = ({ role, isLoggedIn, passwordUpdated }) => {
           <Route path="/create-template" element={
               <ProtectedRoute isLoggedIn={isLoggedIn} passwordUpdated={passwordUpdated}>
                 <CreateTemplateForm />
+              </ProtectedRoute>
+            } />
+             <Route path="/group-management" element={
+              <ProtectedRoute isLoggedIn={isLoggedIn} passwordUpdated={passwordUpdated}>
+                <LeadGroupManager />
               </ProtectedRoute>
             } />
           </>

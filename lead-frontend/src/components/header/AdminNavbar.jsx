@@ -47,6 +47,7 @@ const AdminNavbar = () => {
       </Dropdown>
 
       <Nav.Link as={Link} to="/create-account-counsellor">Create Account</Nav.Link>
+      <Nav.Link as={Link} to="/group-management">Lead Groups</Nav.Link>
       <Nav.Link as={Link} to="/create-template">Templates</Nav.Link>
       <Nav.Link as={Link} to="/whatsApp-leads">WhatsApp Leads</Nav.Link>
     </>
