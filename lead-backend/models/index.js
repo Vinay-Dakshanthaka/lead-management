@@ -36,6 +36,8 @@ db.Counsellor = require('./counsellorModel.js')(sequelize, DataTypes);
 db.LeadCounsellor = require('./leadCounsellorModel.js')(sequelize, DataTypes);
 db.TemplateImage = require('./templateImagesModel.js')(sequelize, DataTypes);
 db.WhatsAppLead = require('./whatsappLeadModel.js')(sequelize, DataTypes);
+db.LeadMessageHistory = require('./leadMessageHistoryModel.js')(sequelize,DataTypes);
+
 
 // Define many-to-many association
 // Define associations in index.js or separate model files
@@ -67,6 +69,17 @@ db.Counsellor.hasMany(db.LeadCounsellor, { foreignKey: 'counsellor_id' });
 // sequelize.sync({ force: false }).then(() => {
 //     console.log('Database & tables synced.');
 // });
+
+ 
+    db.Lead.hasMany(db.LeadMessageHistory, {
+        foreignKey: 'lead_id', // This is the foreign key in LeadMessageHistory model
+        as: 'messageHistory', // Alias for accessing related message history
+    });
+
+    db.LeadMessageHistory.belongsTo(db.Lead, {
+        foreignKey: 'lead_id', // This is the foreign key in LeadMessageHistory model
+        as: 'leads', // Alias for accessing the related Lead
+    });
 
 // Export db object
 module.exports = db;
