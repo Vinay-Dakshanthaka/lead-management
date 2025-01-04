@@ -10,4 +10,6 @@ whatsappLeadRoutes.post('/saveWhatsAppLeadData', whatsappLeadController.saveWhat
 
 whatsappLeadRoutes.get('/getAllWhatsAppLeads', authenticateToken, whatsappLeadController.getAllWhatsAppLeads);
 
+whatsappLeadRoutes.get('/messageStatus/getAllMessageStatuses', authenticateToken, whatsappLeadController.getAllMessageStatuses);
+
 module.exports = whatsappLeadRoutes

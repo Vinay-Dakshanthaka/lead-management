@@ -3,6 +3,7 @@ import axios from 'axios';
 import { baseURL } from '../../config';
 import TemplateDetails from './TemplateDetails';
 import UploadTemplateImage from './UploadTemplateImage';
+import MessageStatusList from '../manageLead/MessageStatusList';
 
 const TemplatesList = () => {
   const [templates, setTemplates] = useState([]);
@@ -157,6 +158,8 @@ const TemplatesList = () => {
             onBack={() => setSelectedTemplate(null)}
           />
         )}
+
+        <MessageStatusList />
 
       </div>
     </>
