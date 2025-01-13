@@ -30,9 +30,9 @@ const upload = multer();
 whatsAppRoutes.post('/create-template', whatsAppController.createWhatsAppTemplate);
 whatsAppRoutes.post('/upload-media', upload.single('image'), whatsAppController.uploadMediaToWhatsApp);
 whatsAppRoutes.post('/registerPhoneNumber', whatsAppController.registerPhoneNumber);
-whatsAppRoutes.post('/sendMediaTemplateMessage', whatsAppController.sendMediaTemplateMessage);
+whatsAppRoutes.post('/sendMediaTemplateMessage', authenticateToken, whatsAppController.sendMediaTemplateMessage);
 whatsAppRoutes.post('/sendMediaTemplateWithButton', whatsAppController.sendMediaTemplateWithButton);
-whatsAppRoutes.post('/sendLaraJan2025BatchTemplate', whatsAppController.sendLaraJan2025BatchTemplate);
+whatsAppRoutes.post('/sendLaraJan2025BatchTemplate', authenticateToken, whatsAppController.sendLaraJan2025BatchTemplate);
 whatsAppRoutes.post('/sendVideoTemplate', whatsAppController.sendVideoTemplate);
 whatsAppRoutes.post('/uploadTemplateImage', upload.single('image'), authenticateToken, whatsAppController.uploadTemplateImage);
 whatsAppRoutes.post('/uploadTemplateMedia', upload.single('file'), authenticateToken, whatsAppController.uploadTemplateMedia);
@@ -159,29 +159,87 @@ whatsAppRoutes.post("/createWhatsAppTemplate", async (req, res) => {
 
 whatsAppRoutes.get("/listWhatsAppTemplates", authenticateToken, async (req, res) => {
   try {
-    const counsellor_id = req.counsellor_id;
+    const userId = req.counsellor_id;
+    console.log("requested user :: ", userId)
 
-    // Fetch the user details
-    const user = await Counsellor.findOne({
-      where: { counsellor_id: counsellor_id },
-    });
+    let adminConfigData;
+    const user = await Counsellor.findByPk(userId);
 
     if (!user) {
-      return res.status(404).send({ message: "No user found" });
+      return res.status(404).send({ message: "user not found" });
     }
 
-    // Fetch the configuration for the counsellor/admin
-    const adminConfig = await AdminConfig.findOne({
-      where: { counsellor_id: counsellor_id },
-    });
 
-    if (!adminConfig) {
-      return res.status(404).send({ message: "Configuration not found for this admin" });
+
+    if (user.role === 'COUNSELLOR') {
+      console.log("user role ::: ", user.role)
+
+      console.log("user found :: ", user.assigned_by)
+      if (!user.assigned_by) {
+        return res.status(403).send({ message: "Access Forbidden. No Admin found for this counsellor" })
+      }
+      const counsellorAdmin = await Counsellor.findOne(
+        {
+          where: {
+            assigned_by: user.assigned_by,
+          }
+        }
+      )
+
+
+      console.log("counsellorAdmin found =======", counsellorAdmin)
+
+
+      adminConfigData = await AdminConfig.findOne({
+        where: {
+          counsellor_id: counsellorAdmin.assigned_by
+        }
+      })
+
+      if (!adminConfigData) {
+        return res.status(401).send({ message: 'Unauthorized : No config for the asssigned admin.' })
+      }
+
+      console.log("amdin config data :: ", adminConfigData)
     }
 
-    const { whatsapp_token, business_id } = adminConfig;
+    if (user.role === 'ADMIN') {
+      adminConfigData = await AdminConfig.findOne({
+        where: {
+          counsellor_id: user.counsellor_id
+        }
+      })
+      if (!adminConfigData) {
+        return res.status(401).send({ message: 'Unauthorized : No config for this admin.' })
+      }
 
+    }
+
+
+    // Fetch the user details
+    // const user = await Counsellor.findOne({
+    //   where: { counsellor_id: counsellor_id },
+    // });
+
+    // if (!user) {
+    //   return res.status(404).send({ message: "No user found" });
+    // }
+
+    // // Fetch the configuration for the counsellor/admin
+    // const adminConfig = await AdminConfig.findOne({
+    //   where: { counsellor_id: counsellor_id },
+    // });
+
+    // if (!adminConfig) {
+    //   return res.status(404).send({ message: "Configuration not found for this admin" });
+    // }
+
+    // const { whatsapp_token, business_id } = adminConfig;
+
+    const business_id = adminConfigData.business_id;
+    const whatsapp_token = adminConfigData.whatsapp_token;
     // Make the API call to get the WhatsApp templates
+
     const response = await axios.get(
       `https://graph.facebook.com/v21.0/${business_id}/message_templates`,
       {

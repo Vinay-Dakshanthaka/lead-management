@@ -4,8 +4,11 @@ const FormData = require("form-data");
 const s3 = require('../config/digitalOceanConfig');
 const { v4: uuidv4 } = require('uuid');
 const db = require('../models');
+const { where } = require('sequelize');
 
 const TemplateImage = db.TemplateImage;
+const Counsellor = db.Counsellor;
+const AdminConfig = db.AdminConfig;
 
 const createWhatsAppTemplate = async (req, res) => {
     try {
@@ -383,6 +386,52 @@ const registerPhoneNumber = async (req, res) => {
 
 
 const sendMediaTemplateMessage = async (req, res) => {
+
+    const userId = req.counsellor_id;
+    let adminConfigData;
+    const user = await Counsellor.findByPk(userId);
+
+    if(!user){
+        return res.status(404).send({message:"user not found"});
+    }
+
+    if(user.role === 'COUNSELLOR'){
+        const counsellorAdmin = await Counsellor.findOne(
+            {
+                where : {
+                    assigned_by: userId
+                }
+            }
+        )
+
+        if(!counsellorAdmin){
+            return res.status(403).send({message : "Access Forbidden. No Admin found for this counsellor"})
+        }
+
+        adminConfigData = await AdminConfig.findOne({
+            where: {
+                counsellor_id : counsellorAdmin.assigned_by
+            }
+        })
+
+        if(!adminConfigData){
+            return res.status(401).send({message : 'Unauthorized : No config for the asssigned admin.'})
+        }
+
+        console.log("amdin config data :: ", adminConfigData)
+    }
+
+    if(user.role === 'ADMIN'){
+        adminConfigData = await AdminConfig.findOne({
+            where: {
+                counsellor_id : user.counsellor_id
+            }
+        })
+        if(!adminConfigData){
+            return res.status(401).send({message : 'Unauthorized : No config for this admin.'})
+        }
+        
+    }
     
     try {
         const {
@@ -398,8 +447,10 @@ const sendMediaTemplateMessage = async (req, res) => {
 
         // const accessToken = process.env.WHATSAPP_TOKEN; // WhatsApp API token
         // const phoneNumberId = process.env.PHONE_NUMBER_ID; // WhatsApp Business Phone Number ID
-        const accessToken = process.env.WHATSAPP_TOKEN; // WhatsApp API token
-        const phoneNumberId = process.env.PHONE_NUMBER_ID; // WhatsApp Business Phone Number ID
+        // const accessToken = process.env.WHATSAPP_TOKEN; // WhatsApp API token
+        const accessToken = adminConfigData.whatsapp_token; // WhatsApp API token
+        // const phoneNumberId = process.env.PHONE_NUMBER_ID; // WhatsApp Business Phone Number ID
+        const phoneNumberId = adminConfigData.phone_number_id; // WhatsApp Business Phone Number ID
 
         // Construct the payload
         const payload = {
@@ -581,6 +632,51 @@ const sendMediaTemplateWithButton = async (req, res) => {
 };
 
 const sendLaraJan2025BatchTemplate = async (req, res) => {
+    const userId = req.counsellor_id;
+    let adminConfigData;
+    const user = await Counsellor.findByPk(userId);
+
+    if(!user){
+        return res.status(404).send({message:"user not found"});
+    }
+
+    if(user.role === 'COUNSELLOR'){
+        const counsellorAdmin = await Counsellor.findOne(
+            {
+                where : {
+                    assigned_by: user.assigned_by
+                }
+            }
+        )
+
+        if(!counsellorAdmin){
+            return res.status(403).send({message : "Access Forbidden. No Admin found for this counsellor"})
+        }
+
+        adminConfigData = await AdminConfig.findOne({
+            where: {
+                counsellor_id : counsellorAdmin.assigned_by
+            }
+        })
+
+        if(!adminConfigData){
+            return res.status(401).send({message : 'Unauthorized : No config for the asssigned admin.'})
+        }
+
+        // console.log("amdin config data :: ", adminConfigData)
+    }
+
+    if(user.role === 'ADMIN'){
+        adminConfigData = await AdminConfig.findOne({
+            where: {
+                counsellor_id : user.counsellor_id
+            }
+        })
+        if(!adminConfigData){
+            return res.status(401).send({message : 'Unauthorized : No config for this admin.'})
+        }
+        
+    }
     try {
         const {
             to,
@@ -589,8 +685,11 @@ const sendLaraJan2025BatchTemplate = async (req, res) => {
             imageUrl,
         } = req.body; // Destructure necessary data from the request body
 
-        const accessToken = process.env.WHATSAPP_TOKEN; // WhatsApp API token
-        const phoneNumberId = process.env.PHONE_NUMBER_ID; // WhatsApp Business Phone Number ID
+        // const accessToken = process.env.WHATSAPP_TOKEN; // WhatsApp API token
+        // const phoneNumberId = process.env.PHONE_NUMBER_ID; // WhatsApp Business Phone Number ID
+
+        const accessToken = adminConfigData.whatsapp_token; // WhatsApp API token
+        const phoneNumberId = adminConfigData.phone_number_id; // WhatsApp Business Phone Number ID
 
         // Construct the payload
         const payload = {

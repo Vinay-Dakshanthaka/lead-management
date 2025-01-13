@@ -14,6 +14,10 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING,
             allowNull: true, // Optional field to describe the group
         },
+        // created_by: {
+        //     type: DataTypes.STRING,
+        //     allowNull: false, // Name or ID of the user who created the group
+        // },
         created_by: {
             type: DataTypes.INTEGER,
             allowNull: true,
