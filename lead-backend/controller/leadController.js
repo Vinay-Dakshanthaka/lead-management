@@ -87,6 +87,7 @@ const isToday = (date) => moment(date).isSame(moment(), 'day');
 // Save new lead
 const saveLeadData = async (req, res) => {
     try {
+        const userId = req.counsellor_id;
         
         const { name, email, phone, counsellor_id } = req.body;
 
@@ -104,7 +105,8 @@ const saveLeadData = async (req, res) => {
         lead = await Lead.create({
             name,
             email,
-            phone
+            phone,
+            counsellor_id: userId
         });
 
         // Check if the counsellor exists
@@ -226,15 +228,35 @@ const reAssignLead = async (req, res) => {
             where: { lead_id, is_active: true }
         });
 
+        // If the received combination is already active, skip the reassignment
+        if (activeCounsellor && activeCounsellor.counsellor_id === counsellor_id) {
+            return res.status(200).send({ message: "This lead is already assigned to this counsellor and active" });
+        }
+
+        // If there is an active counsellor, deactivate the current one
         if (activeCounsellor) {
-            // Set the current active counsellor to inactive
             await LeadCounsellor.update(
                 { is_active: false },
-                { where: { lead_id, counsellor_id: activeCounsellor.counsellor_id } }
+                { where: { lead_id, is_active: true } } // Deactivate the current active counsellor
             );
         }
 
-        // Assign the new counsellor to the lead and set them as active
+        // Check if the lead-counsellor combination already exists in the table
+        const existingAssignment = await LeadCounsellor.findOne({
+            where: { lead_id, counsellor_id }
+        });
+
+        if (existingAssignment) {
+            // Update the existing combination and set it as active
+            await LeadCounsellor.update(
+                { is_active: true, assigned_date: moment().format('YYYY-MM-DD HH:mm:ss') },
+                { where: { lead_id, counsellor_id } }
+            );
+
+            return res.status(200).send({ message: "Lead successfully reassigned to the existing counsellor" });
+        }
+
+        // If no existing combination, create a new lead-counsellor combination
         const assignedDate = moment().format('YYYY-MM-DD HH:mm:ss');  // Store date and time
 
         await LeadCounsellor.create({
@@ -252,6 +274,7 @@ const reAssignLead = async (req, res) => {
         return res.status(500).send({ message: "Failed to re-assign lead", error });
     }
 };
+
 
 
 // const updateLeadDetails = async (req, res) => {
@@ -724,7 +747,7 @@ const uploadLeadData = async (req, res) => {
                 name: name || null,            // Save name if available, else null
                 email: validEmail ? email : null,  // Only set email if it's valid
                 phone: phone,                  // Phone is required
-                counsellor_id: null            // Default to null
+                counsellor_id: userId            // Default to null
             };
 
             try {
@@ -805,7 +828,8 @@ const getLeadData = async (req, res) => {
         // Fetch all leads from the database where joining_status is false
         const leads = await Lead.findAll({
             where: {
-                joining_status: false
+                joining_status: false,
+                counsellor_id : userId
             },
             include: [
                 {

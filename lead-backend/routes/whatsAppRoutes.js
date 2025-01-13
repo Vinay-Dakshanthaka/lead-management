@@ -6,36 +6,39 @@ const FormData = require("form-data");
 const fs = require('fs');
 const multer = require('multer');
 const path = require('path');
-const authenticateToken  = require('../middlewares/authenticateToken')
+const authenticateToken = require('../middlewares/authenticateToken')
 const { v4: uuidv4 } = require('uuid');
 const tmp = require('tmp');
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-      cb(null, "uploads/"); // Directory for uploads
-    },
-    filename: (req, file, cb) => {
-      const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-      cb(null, uniqueSuffix + path.extname(file.originalname)); // Unique filename
-    },
-  });
+  destination: (req, file, cb) => {
+    cb(null, "uploads/"); // Directory for uploads
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, uniqueSuffix + path.extname(file.originalname)); // Unique filename
+  },
+});
 
+const db = require('../models');
+const Counsellor = db.Counsellor
+const AdminConfig = db.AdminConfig
 // Initialize Multer
 const upload = multer();
 
 
 // whatsAppRoutes.post('/create-template', whatsAppController.createWhatsAppTemplate);
-whatsAppRoutes.post('/create-template',  whatsAppController.createWhatsAppTemplate);
+whatsAppRoutes.post('/create-template', whatsAppController.createWhatsAppTemplate);
 whatsAppRoutes.post('/upload-media', upload.single('image'), whatsAppController.uploadMediaToWhatsApp);
-whatsAppRoutes.post('/registerPhoneNumber',  whatsAppController.registerPhoneNumber);
-whatsAppRoutes.post('/sendMediaTemplateMessage',  whatsAppController.sendMediaTemplateMessage);
-whatsAppRoutes.post('/sendMediaTemplateWithButton',  whatsAppController.sendMediaTemplateWithButton);
-whatsAppRoutes.post('/sendLaraJan2025BatchTemplate',  whatsAppController.sendLaraJan2025BatchTemplate);
-whatsAppRoutes.post('/sendVideoTemplate',  whatsAppController.sendVideoTemplate);
+whatsAppRoutes.post('/registerPhoneNumber', whatsAppController.registerPhoneNumber);
+whatsAppRoutes.post('/sendMediaTemplateMessage', whatsAppController.sendMediaTemplateMessage);
+whatsAppRoutes.post('/sendMediaTemplateWithButton', whatsAppController.sendMediaTemplateWithButton);
+whatsAppRoutes.post('/sendLaraJan2025BatchTemplate', whatsAppController.sendLaraJan2025BatchTemplate);
+whatsAppRoutes.post('/sendVideoTemplate', whatsAppController.sendVideoTemplate);
 whatsAppRoutes.post('/uploadTemplateImage', upload.single('image'), authenticateToken, whatsAppController.uploadTemplateImage);
-whatsAppRoutes.post('/uploadTemplateMedia', upload.single('file'),authenticateToken, whatsAppController.uploadTemplateMedia);
+whatsAppRoutes.post('/uploadTemplateMedia', upload.single('file'), authenticateToken, whatsAppController.uploadTemplateMedia);
 
-whatsAppRoutes.get('/getAllTemplateImages',  whatsAppController.getAllTemplateImages);
-whatsAppRoutes.get('/getTemplateImageById/:id',  whatsAppController.getTemplateImageById);
+whatsAppRoutes.get('/getAllTemplateImages', whatsAppController.getAllTemplateImages);
+whatsAppRoutes.get('/getTemplateImageById/:id', whatsAppController.getTemplateImageById);
 whatsAppRoutes.get('/getTemplateImagesByCounsellorId', authenticateToken, whatsAppController.getTemplateImagesByCounsellorId);
 
 
@@ -126,17 +129,69 @@ whatsAppRoutes.post("/createWhatsAppTemplate", async (req, res) => {
 });
 
 
-whatsAppRoutes.get("/listWhatsAppTemplates", async (req, res) => {
+// whatsAppRoutes.get("/listWhatsAppTemplates",authenticateToken, async (req, res) => {
+//   try {
+//     const counsellor_id = req.counsellor_id;
+
+//     const user = await Counsellor.findByPk(counsellor_id);
+
+//     if (!user) {
+//       return res.status(404).send({ message : "No user found" });
+//   }
+
+//     const response = await axios.get(
+//       `https://graph.facebook.com/v21.0/${process.env.BUSINESS_ID}/message_templates`,
+//       {
+//         headers: {
+//           Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}`,
+//         },
+//       }
+//     );
+//     console.log("Template List :",response.data)
+
+//     res.status(200).json({ templates: response.data });
+//   } catch (error) {
+//     console.error("Error fetching templates:", error.response?.data || error.message);
+//     res.status(500).json({ error: "Failed to fetch WhatsApp templates" });
+//   }
+// });
+
+
+whatsAppRoutes.get("/listWhatsAppTemplates", authenticateToken, async (req, res) => {
   try {
+    const counsellor_id = req.counsellor_id;
+
+    // Fetch the user details
+    const user = await Counsellor.findOne({
+      where: { counsellor_id: counsellor_id },
+    });
+
+    if (!user) {
+      return res.status(404).send({ message: "No user found" });
+    }
+
+    // Fetch the configuration for the counsellor/admin
+    const adminConfig = await AdminConfig.findOne({
+      where: { counsellor_id: counsellor_id },
+    });
+
+    if (!adminConfig) {
+      return res.status(404).send({ message: "Configuration not found for this admin" });
+    }
+
+    const { whatsapp_token, business_id } = adminConfig;
+
+    // Make the API call to get the WhatsApp templates
     const response = await axios.get(
-      `https://graph.facebook.com/v21.0/${process.env.BUSINESS_ID}/message_templates`,
+      `https://graph.facebook.com/v21.0/${business_id}/message_templates`,
       {
         headers: {
-          Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}`,
+          Authorization: `Bearer ${whatsapp_token}`,
         },
       }
     );
-    console.log("Template List :",response.data)
+
+    console.log("Template List:", response.data);
 
     res.status(200).json({ templates: response.data });
   } catch (error) {
@@ -144,6 +199,7 @@ whatsAppRoutes.get("/listWhatsAppTemplates", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch WhatsApp templates" });
   }
 });
+
 
 whatsAppRoutes.post("/generateTemplatePayload", (req, res) => {
   try {
@@ -199,11 +255,34 @@ whatsAppRoutes.post("/generateTemplatePayload", (req, res) => {
   }
 });
 
-const APP_ID =  process.env.APP_ID;
-const USER_ACCESS_TOKEN = process.env.WHATSAPP_TOKEN;
-const GRAPH_API_URL = 'https://graph.facebook.com/v21.0';
+
 
 whatsAppRoutes.post('/upload-template-with-image', async (req, res) => {
+
+  const counsellor_id = req.counsellor_id;
+
+  // Fetch the user details
+  const user = await Counsellor.findOne({
+    where: { counsellor_id: counsellor_id },
+  });
+
+  if (!user) {
+    return res.status(404).send({ message: "No user found" });
+  }
+
+  // Fetch the configuration for the counsellor/admin
+  const adminConfig = await AdminConfig.findOne({
+    where: { counsellor_id: counsellor_id },
+  });
+
+  if (!adminConfig) {
+    return res.status(404).send({ message: "Configuration not found for this admin" });
+  }
+
+  const APP_ID = adminConfig.app_id;
+  const USER_ACCESS_TOKEN = adminConfig.whatsapp_token;
+  const GRAPH_API_URL = 'https://graph.facebook.com/v21.0';
+
   const { imageUrl, templateName, bodyText } = req.body;
 
   // Validate the request data

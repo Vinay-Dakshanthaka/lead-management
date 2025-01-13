@@ -5,6 +5,7 @@ import Cookies from 'js-cookie';
 import AdminNavbar from './AdminNavbar';
 import CounsellorNavbar from './CounsellorNavbar';
 import toast, { Toaster } from 'react-hot-toast';
+import SuperAdminNavbar from './SuperAdminNavbar';
 
 const Header = ({ role, isLoggedIn, onSignOut }) => {
     const navigate = useNavigate();
@@ -31,6 +32,7 @@ const Header = ({ role, isLoggedIn, onSignOut }) => {
                     <Nav className="ml-auto">
                         {role === 'ADMIN' && <AdminNavbar />}
                         {role === 'COUNSELLOR' && <CounsellorNavbar />}
+                        {role === 'SUPER ADMIN' && <SuperAdminNavbar />}
                         {isLoggedIn ? (
                             <>
                             <Nav.Link as={Link} to="/update-password" >Update Password</Nav.Link>

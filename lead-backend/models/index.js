@@ -38,8 +38,9 @@ db.TemplateImage = require('./templateImagesModel.js')(sequelize, DataTypes);
 db.WhatsAppLead = require('./whatsappLeadModel.js')(sequelize, DataTypes);
 db.LeadGroup = require('./leadGroupModel.js')(sequelize, DataTypes);
 db.LeadGroupMapping = require('./leadGroupMappingModel.js')(sequelize, DataTypes);
-db.LeadMessageHistory = require('./leadMessageHistoryModel.js')(sequelize,DataTypes);
-db.MessageStatus = require('./messageStatusModel.js')(sequelize,DataTypes);
+db.LeadMessageHistory = require('./leadMessageHistoryModel.js')(sequelize, DataTypes);
+db.MessageStatus = require('./messageStatusModel.js')(sequelize, DataTypes);
+db.AdminConfig = require('./AdminConfigModel.js')(sequelize, DataTypes);
 
 
 // Define many-to-many association
@@ -50,14 +51,14 @@ db.Lead.belongsToMany(db.Counsellor, {
     through: db.LeadCounsellor,
     foreignKey: 'lead_id',
     otherKey: 'counsellor_id',
-    as: 'counsellors' // Alias for the relationship
+    as: 'counsellors'
 });
 
 db.Counsellor.belongsToMany(db.Lead, {
     through: db.LeadCounsellor,
     foreignKey: 'counsellor_id',
     otherKey: 'lead_id',
-    as: 'leads' // Alias for the relationship
+    as: 'leads' 
 });
 
 // Define LeadCounsellor model associations
@@ -76,23 +77,48 @@ db.LeadGroupMapping.belongsTo(db.Lead, { foreignKey: 'lead_id', as: 'Lead' });
 
 db.LeadGroup.belongsTo(db.Counsellor, { foreignKey: 'created_by', as: 'Creator' });
 
+db.AdminConfig.belongsTo(db.Counsellor, {
+    foreignKey: "counsellor_id",
+    as: "counsellor",
+    onDelete: "CASCADE", // Deletes config when the associated counsellor is deleted
+});
 
+db.Counsellor.hasMany(db.AdminConfig, {
+    foreignKey: "counsellor_id",
+    as: "adminconfig",
+});
+
+
+ //  associations for self-referencing admin and counsellor 
+    db.Counsellor.belongsTo(db.Counsellor, {
+        as: "admin", 
+        foreignKey: "assigned_by",
+    });
+
+    db.Counsellor.hasMany(db.Counsellor, {
+        as: "assignedCounsellors", 
+        foreignKey: "assigned_by",
+    });
 
 // Sync the models with the database (optional if needed)
 // sequelize.sync({ force: false }).then(() => {
 //     console.log('Database & tables synced.');
 // });
 
- 
-    db.Lead.hasMany(db.LeadMessageHistory, {
-        foreignKey: 'lead_id', // This is the foreign key in LeadMessageHistory model
-        as: 'messageHistory', // Alias for accessing related message history
-    });
 
-    db.LeadMessageHistory.belongsTo(db.Lead, {
-        foreignKey: 'lead_id', // This is the foreign key in LeadMessageHistory model
-        as: 'leads', // Alias for accessing the related Lead
-    });
+db.Lead.hasMany(db.LeadMessageHistory, {
+    foreignKey: 'lead_id', // This is the foreign key in LeadMessageHistory model
+    as: 'messageHistory', // Alias for accessing related message history
+});
 
-// Export db object
+db.LeadMessageHistory.belongsTo(db.Lead, {
+    foreignKey: 'lead_id', // This is the foreign key in LeadMessageHistory model
+    as: 'leads', // Alias for accessing the related Lead
+});
+
+db.Lead.belongsTo(db.Counsellor, {
+    foreignKey: "counsellor_id",
+    as: "activeCounsellor"
+});
+
 module.exports = db;

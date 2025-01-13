@@ -8,7 +8,7 @@ const SignInForm = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
-  
+
   // Validation helper functions
   const validateEmail = (email) => /\S+@\S+\.\S+/.test(email);
   const validatePassword = (password) => password.length > 0;
@@ -39,13 +39,14 @@ const SignInForm = () => {
         if (response.status === 200) {
           // Correctly destructure the response data
           const { role, token, password_updated } = response.data;
-          
+
           // Store the role, token, and password_updated in localStorage
           localStorage.setItem('role', role);
           localStorage.setItem('token', token);
           localStorage.setItem('password_updated', password_updated); // Storing the correct password_updated value
-          
+
           toast.success('Sign-in successful');
+          console.log("form data ", response.data)
           setTimeout(() => {
             // If password has not been updated, redirect user to the password update page
             if (!password_updated) {
@@ -53,9 +54,14 @@ const SignInForm = () => {
             } else {
               // Redirect based on role
               if (role === 'ADMIN') {
+                console.log("role", role);
                 navigate('/admin-dashboard');
               } else if (role === 'COUNSELLOR') {
+                console.log("role", role);
                 navigate('/counsellor-dashboard');
+              } else if (role === 'SUPER ADMIN') {
+                console.log("role", role);
+                navigate('/superadmin-dashboard');
               }
             }
           }, 2000);

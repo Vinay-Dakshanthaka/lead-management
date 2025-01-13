@@ -92,6 +92,8 @@ import CreateTemplateForm from './admin/CreateTemplateForm';
 import WhatsAppLeadForm from './whatsAppLeads/WhatsAppLeadForm';
 import WhatsAppLeadsTable from './whatsAppLeads/WhatsAppLeadsTable';
 import LeadGroupManager from './manageLead/LeadGroupManager';
+import SaveAdminConfig from './admin/SaveAdminConfig';
+import AdminSignUpForm from './auth/AdminSignUpForm';
 
 const Main = ({ role, isLoggedIn, passwordUpdated }) => {
   return (
@@ -104,7 +106,7 @@ const Main = ({ role, isLoggedIn, passwordUpdated }) => {
           </ProtectedRoute>
         } />
         <Route path="/lead-form" element={
-            <WhatsAppLeadForm />
+          <WhatsAppLeadForm />
         } />
         <Route path="/reports" element={
           <ProtectedRoute isLoggedIn={isLoggedIn} passwordUpdated={passwordUpdated}>
@@ -137,8 +139,38 @@ const Main = ({ role, isLoggedIn, passwordUpdated }) => {
           </ProtectedRoute>
         } />
         <Route path="/update-password" element={<UpdatePasswordForm />} />
+{/* 
+        {role = 'SUPER ADMIN' && (
+          <>
+            <Route path="/superadmin-dashboard" element={
+              <ProtectedRoute isLoggedIn={isLoggedIn} passwordUpdated={passwordUpdated}>
+                <SaveAdminConfig />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin-signup-form" element={
+              <ProtectedRoute isLoggedIn={isLoggedIn} passwordUpdated={passwordUpdated}>
+                <AdminSignUpForm />
+              </ProtectedRoute>
+            } />
+
+          </>
+        )} */}
 
         {/* Admin Routes */}
+        {role === 'SUPER ADMIN' && (
+          <>
+           <Route path="/superadmin-dashboard" element={
+              <ProtectedRoute isLoggedIn={isLoggedIn} passwordUpdated={passwordUpdated}>
+                <SaveAdminConfig />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin-signup-form" element={
+              <ProtectedRoute isLoggedIn={isLoggedIn} passwordUpdated={passwordUpdated}>
+                <AdminSignUpForm />
+              </ProtectedRoute>
+            } />
+          </>
+        )}
         {role === 'ADMIN' && (
           <>
             <Route path="/admin-dashboard" element={
@@ -192,23 +224,23 @@ const Main = ({ role, isLoggedIn, passwordUpdated }) => {
         {/* Counsellor Routes */}
         {role === 'COUNSELLOR' && (
           <>
-          <Route path="/counsellor-dashboard" element={
-            <ProtectedRoute isLoggedIn={isLoggedIn} passwordUpdated={passwordUpdated}>
-              <CounsellorDashboard />
-            </ProtectedRoute>
-          } />
-          <Route path="/create-template" element={
+            <Route path="/counsellor-dashboard" element={
+              <ProtectedRoute isLoggedIn={isLoggedIn} passwordUpdated={passwordUpdated}>
+                <CounsellorDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/create-template" element={
               <ProtectedRoute isLoggedIn={isLoggedIn} passwordUpdated={passwordUpdated}>
                 <CreateTemplateForm />
               </ProtectedRoute>
             } />
-             <Route path="/group-management" element={
+            <Route path="/group-management" element={
               <ProtectedRoute isLoggedIn={isLoggedIn} passwordUpdated={passwordUpdated}>
                 <LeadGroupManager />
               </ProtectedRoute>
             } />
           </>
-          
+
         )}
 
         {/* Auth Routes */}

@@ -5,21 +5,24 @@ import { toast } from 'react-hot-toast';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { baseURL } from '../../config';
 import { FaExclamationTriangle } from 'react-icons/fa';
+import Paginate from '../../common/Paginate';
+import { Spinner } from 'react-bootstrap';
 
 const ReassignLeadToCounsellor = () => {
     const [leads, setLeads] = useState([]);
+    const [filteredLeads, setFilteredLeads] = useState([]);
     const [selectedCounsellors, setSelectedCounsellors] = useState({});
     const [currentPage, setCurrentPage] = useState(1);
-    const [leadsPerPage] = useState(10); // Set leads per page
+    const [leadsPerPage] = useState(10);
     const [searchTerm, setSearchTerm] = useState('');
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Fetch lead data from the API
         const fetchLeads = async () => {
             try {
-                const token = localStorage.getItem("token");
+                const token = localStorage.getItem('token');
                 if (!token) {
-                    console.log("No token provided.");
+                    console.log('No token provided.');
                     return;
                 }
 
@@ -30,9 +33,12 @@ const ReassignLeadToCounsellor = () => {
                 };
                 const response = await axios.get(`${baseURL}/api/lead/get-lead-data`, config);
                 setLeads(response.data.leads);
+                setFilteredLeads(response.data.leads); // Initialize filtered leads
+                setLoading(false);
             } catch (error) {
                 toast.error('Failed to fetch lead data');
                 console.error('Error fetching leads:', error);
+                setLoading(false);
             }
         };
 
@@ -41,7 +47,7 @@ const ReassignLeadToCounsellor = () => {
 
     // Handle counsellor selection
     const handleCounsellorSelect = (leadId, counsellorId) => {
-        setSelectedCounsellors(prevState => ({
+        setSelectedCounsellors((prevState) => ({
             ...prevState,
             [leadId]: counsellorId,
         }));
@@ -56,9 +62,9 @@ const ReassignLeadToCounsellor = () => {
         }
 
         try {
-            const token = localStorage.getItem("token");
+            const token = localStorage.getItem('token');
             if (!token) {
-                console.log("No token provided.");
+                console.log('No token provided.');
                 return;
             }
 
@@ -67,19 +73,28 @@ const ReassignLeadToCounsellor = () => {
                     Authorization: `Bearer ${token}`,
                 },
             };
-            // Make API call to reassign the lead
-            const response = await axios.post(`${baseURL}/api/lead/reAssignLead`, {
-                lead_id: leadId,
-                counsellor_id: selectedCounsellorId,
-            }, config);
+            const response = await axios.post(
+                `${baseURL}/api/lead/reAssignLead`,
+                {
+                    lead_id: leadId,
+                    counsellor_id: selectedCounsellorId,
+                },
+                config
+            );
 
             toast.success('Counsellor reassigned successfully');
 
-            // Update active counsellor data in UI without reload
-            setLeads(prevLeads =>
-                prevLeads.map(lead =>
+            // Update active counsellor data in UI
+            setLeads((prevLeads) =>
+                prevLeads.map((lead) =>
                     lead.lead_id === leadId
-                        ? { ...lead, activeCounsellor: { name: response.data.counsellorName, counsellor_id: selectedCounsellorId } }
+                        ? {
+                              ...lead,
+                              activeCounsellor: {
+                                  name: response.data.counsellorName,
+                                  counsellor_id: selectedCounsellorId,
+                              },
+                          }
                         : lead
                 )
             );
@@ -92,26 +107,28 @@ const ReassignLeadToCounsellor = () => {
     // Handle search input
     const handleSearch = (e) => {
         setSearchTerm(e.target.value);
-        setCurrentPage(1); // Reset to first page on search
+        const term = e.target.value.toLowerCase();
+        const filtered = leads.filter(
+            (lead) =>
+                lead.lead_name.toLowerCase().includes(term) ||
+                lead.lead_email.toLowerCase().includes(term) ||
+                lead.lead_phone.includes(term)
+        );
+        setFilteredLeads(filtered);
+        setCurrentPage(1); // Reset to the first page
     };
 
-    // Pagination logic
+    // Get current leads for pagination
     const indexOfLastLead = currentPage * leadsPerPage;
     const indexOfFirstLead = indexOfLastLead - leadsPerPage;
-
-    // Filter leads based on search term
-    // Filter leads based on search term, with null checks
-    const filteredLeads = leads.filter(lead =>
-        (lead.lead_name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-        (lead.lead_email?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-        (lead.lead_phone || '').includes(searchTerm)
-    );
-
-
     const currentLeads = filteredLeads.slice(indexOfFirstLead, indexOfLastLead);
 
-    // Change page
-    const paginate = pageNumber => setCurrentPage(pageNumber);
+    const handlePageChange = (page) => {
+        setCurrentPage(page);
+    };
+
+    if (loading) return <Spinner animation="border" variant="primary" />;
+    if (!leads.length) return <div>No leads available</div>;
 
     return (
         <div className="container mt-4">
@@ -135,21 +152,25 @@ const ReassignLeadToCounsellor = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {currentLeads.map(lead => (
+                    {currentLeads.map((lead) => (
                         <tr key={lead.lead_id}>
                             <td>{lead.lead_name}</td>
                             <td>{lead.lead_email}</td>
                             <td>{lead.lead_phone}</td>
-                            {/* <td>{lead.activeCounsellor ? lead.activeCounsellor.name || lead.activeCounsellor.email : 'None'}</td> */}
                             <td>
-                                {lead.activeCounsellor ?
-                                    (lead.activeCounsellor.name || lead.activeCounsellor.email) :
-                                    <span className="badge badge-warning bg-warning"><FaExclamationTriangle fill='#ff0000'/> None</span>
-                                }
+                                {lead.activeCounsellor ? (
+                                    lead.activeCounsellor.name || lead.activeCounsellor.email
+                                ) : (
+                                    <span className="badge badge-warning bg-warning">
+                                        <FaExclamationTriangle fill="#ff0000" /> None
+                                    </span>
+                                )}
                             </td>
                             <td>
                                 <CounsellorSelect
-                                    onSelect={counsellorId => handleCounsellorSelect(lead.lead_id, counsellorId)}
+                                    onSelect={(counsellorId) =>
+                                        handleCounsellorSelect(lead.lead_id, counsellorId)
+                                    }
                                 />
                             </td>
                             <td>
@@ -165,18 +186,12 @@ const ReassignLeadToCounsellor = () => {
                 </tbody>
             </table>
 
-            {/* Pagination */}
-            <nav>
-                <ul className="pagination">
-                    {Array.from({ length: Math.ceil(filteredLeads.length / leadsPerPage) }, (_, i) => i + 1).map(number => (
-                        <li key={number} className="page-item">
-                            <a onClick={() => paginate(number)} href="#!" className="page-link">
-                                {number}
-                            </a>
-                        </li>
-                    ))}
-                </ul>
-            </nav>
+            <Paginate
+                currentPage={currentPage}
+                totalItems={filteredLeads.length}
+                itemsPerPage={leadsPerPage}
+                onPageChange={handlePageChange}
+            />
         </div>
     );
 };
