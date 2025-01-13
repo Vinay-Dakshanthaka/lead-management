@@ -7,6 +7,7 @@ import { baseURL } from '../../config';
 const SignInForm = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
   const navigate = useNavigate();
 
   // Validation helper functions
@@ -34,45 +35,30 @@ const SignInForm = () => {
     if (Object.keys(formErrors).length === 0) {
       try {
         const response = await axios.post(`${baseURL}/api/auth/sign-in`, { email, password });
-        // console.log(response.data);
 
         if (response.status === 200) {
-          // Correctly destructure the response data
           const { role, token, password_updated } = response.data;
 
-          // Store the role, token, and password_updated in localStorage
           localStorage.setItem('role', role);
           localStorage.setItem('token', token);
-          localStorage.setItem('password_updated', password_updated); // Storing the correct password_updated value
+          localStorage.setItem('password_updated', password_updated);
 
           toast.success('Sign-in successful');
-          console.log("form data ", response.data)
           setTimeout(() => {
-            // If password has not been updated, redirect user to the password update page
             if (!password_updated) {
-              navigate('/update-password'); // You should implement this route to handle the password update
+              navigate('/update-password');
             } else {
-              // Redirect based on role
-              if (role === 'ADMIN') {
-                console.log("role", role);
-                navigate('/admin-dashboard');
-              } else if (role === 'COUNSELLOR') {
-                console.log("role", role);
-                navigate('/counsellor-dashboard');
-              } else if (role === 'SUPER ADMIN') {
-                console.log("role", role);
-                navigate('/superadmin-dashboard');
-              }
+              if (role === 'ADMIN') navigate('/admin-dashboard');
+              else if (role === 'COUNSELLOR') navigate('/counsellor-dashboard');
+              else if (role === 'SUPER ADMIN') navigate('/superadmin-dashboard');
             }
           }, 2000);
         }
       } catch (error) {
         if (error.response && error.response.status === 401) {
           toast.error('Invalid email or password');
-          console.log(error);
         } else {
           toast.error('Failed to sign in');
-          console.log(error);
         }
       }
     } else {
@@ -82,7 +68,7 @@ const SignInForm = () => {
 
   return (
     <>
-      <div className=" display-1 text-primary text-center my-2">Lead Management </div>
+      <div className="display-1 text-primary text-center my-2">Lead Management</div>
       <div className="container mt-5">
         <Toaster />
         <h2 className="text-center mb-4">Sign In</h2>
@@ -105,19 +91,28 @@ const SignInForm = () => {
                 {errors.email && <div className="invalid-feedback">{errors.email}</div>}
               </div>
 
-              {/* Password field */}
+              {/* Password field with toggle button */}
               <div className="mb-3">
                 <label htmlFor="password" className="form-label">Password</label>
-                <input
-                  type="password"
-                  className={`form-control ${errors.password ? 'is-invalid' : ''}`}
-                  id="password"
-                  name="password"
-                  placeholder="Enter your password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                />
+                <div className="input-group">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    className={`form-control ${errors.password ? 'is-invalid' : ''}`}
+                    id="password"
+                    name="password"
+                    placeholder="Enter your password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? 'Hide' : 'Show'}
+                  </button>
+                </div>
                 {errors.password && <div className="invalid-feedback">{errors.password}</div>}
               </div>
 

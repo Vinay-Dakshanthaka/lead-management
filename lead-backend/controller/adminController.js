@@ -348,27 +348,34 @@ const getAllLeadsAndCounsellors = async (req, res) => {
 const getDashboardOverview = async (req, res) => {
     try {
         const userId = req.counsellor_id; // Extract counsellor ID from the request
-
         const user = await Counsellor.findByPk(userId);
-        console.log(user);
 
-        if(!user){
-            return res.status(404).send({message : "No User Found"})
+        if (!user) {
+            return res.status(404).json({ message: "No User Found" });
         }
 
         const userRole = user.role;
 
-        let leadsFilter = {};
-        let counsellorFilter = {};
-
-        // If the user is a counsellor, filter leads by their counsellor_id
-        if (userRole === 'ADMIN') {
-            leadsFilter.counsellor_id = userId;
-            counsellorFilter.counsellor_id = userId;
+        // Fetch counsellors assigned by this admin (if user is ADMIN)
+        let counsellors = [];
+        if (userRole === "ADMIN") {
+            counsellors = await Counsellor.findAll({
+                where: { assigned_by: userId },
+                attributes: ["counsellor_id", "name", "email"],
+            });
         }
 
-        // Total number of leads (filtered by counsellor, if applicable)
-        const totalLeads = await Lead.count({ where: leadsFilter });
+        const counsellorIds = counsellors.map((c) => c.counsellor_id);
+
+        // Define filters
+        const leadsFilter = userRole === "ADMIN" ?{ counsellor_id: userId } : { counsellor_id: counsellorIds } ;
+        const counsellorFilter = userRole === "ADMIN" ? { counsellor_id: counsellorIds } : { counsellor_id: userId };
+
+        // **Total number of leads assigned to counsellors under this admin**
+        const totalLeads = await Lead.count({
+            where: leadsFilter,
+        });
+        console.log("toltal lead count +++++++", totalLeads)
 
         // Number of leads that have joined
         const totalJoinedLeads = await Lead.count({
@@ -377,6 +384,7 @@ const getDashboardOverview = async (req, res) => {
                 joining_status: true,
             },
         });
+
 
         // Number of leads that are interested and active
         const totalInterestedLeads = await LeadCounsellor.count({
@@ -396,16 +404,16 @@ const getDashboardOverview = async (req, res) => {
             include: [
                 {
                     model: Counsellor,
-                    as: 'Counsellor',
-                    attributes: ['counsellor_id', 'name', 'email'],
+                    as: "Counsellor",
+                    attributes: ["counsellor_id", "name", "email"],
                 },
             ],
             attributes: [
-                'counsellor_id',
-                [db.sequelize.fn('COUNT', db.sequelize.col('lead_id')), 'joined_leads_count'],
+                "counsellor_id",
+                [db.sequelize.fn("COUNT", db.sequelize.col("lead_id")), "joined_leads_count"],
             ],
-            group: ['LeadCounsellor.counsellor_id'],
-            order: [[db.sequelize.literal('joined_leads_count'), 'DESC']],
+            group: ["LeadCounsellor.counsellor_id"],
+            order: [[db.sequelize.literal("joined_leads_count"), "DESC"]],
         });
 
         // Counsellor-wise count of interested and active leads
@@ -418,20 +426,20 @@ const getDashboardOverview = async (req, res) => {
             include: [
                 {
                     model: Counsellor,
-                    as: 'Counsellor',
-                    attributes: ['counsellor_id', 'name', 'email'],
+                    as: "Counsellor",
+                    attributes: ["counsellor_id", "name", "email"],
                 },
             ],
             attributes: [
-                'counsellor_id',
-                [db.sequelize.fn('COUNT', db.sequelize.col('lead_id')), 'interested_leads_count'],
+                "counsellor_id",
+                [db.sequelize.fn("COUNT", db.sequelize.col("lead_id")), "interested_leads_count"],
             ],
-            group: ['LeadCounsellor.counsellor_id'],
-            order: [[db.sequelize.literal('interested_leads_count'), 'DESC']],
+            group: ["LeadCounsellor.counsellor_id"],
+            order: [[db.sequelize.literal("interested_leads_count"), "DESC"]],
         });
 
         // Send the aggregated data as response
-       return res.status(200).json({
+        return res.status(200).json({
             totalLeads,
             totalJoinedLeads,
             totalInterestedLeads,
@@ -439,10 +447,12 @@ const getDashboardOverview = async (req, res) => {
             counsellorInterestedLeads,
         });
     } catch (error) {
-        console.error('Error fetching dashboard overview:', error);
-       return res.status(500).json({ message: 'Internal server error' });
+        console.error("Error fetching dashboard overview:", error);
+        return res.status(500).json({ message: "Internal server error" });
     }
 };
+
+
 
 
 const saveAdminConfig = async (req, res) => {
