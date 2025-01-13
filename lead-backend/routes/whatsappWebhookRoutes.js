@@ -7,9 +7,6 @@ const FormData = require("form-data");
 const fs = require("fs");
 const path = require("path");
 
-// const db = require('../models')
-// const MessageStatus = db.MessageStatus; 
-
 // Facebook webhook verification
 const token = process.env.WHATSAPP_TOKEN;
 const mytoken = process.env.CHECK_TOKEN;
