@@ -3,12 +3,15 @@ import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { Table, Spinner } from 'react-bootstrap';
 import { baseURL } from '../../config';
+import Paginate from '../../common/Paginate';
 
 const CounsellorLeads = () => {
   const { counsellor_id } = useParams();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -25,8 +28,21 @@ const CounsellorLeads = () => {
     fetchData();
   }, [counsellor_id]);
 
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const paginateLeads = () => {
+    if (!data || !data.leads) return [];
+    const indexOfLastLead = currentPage * itemsPerPage;
+    const indexOfFirstLead = indexOfLastLead - itemsPerPage;
+    return data.leads.slice(indexOfFirstLead, indexOfLastLead);
+  };
+
   if (loading) return <Spinner animation="border" variant="primary" />;
   if (error) return <div>{error}</div>;
+
+  const paginatedLeads = paginateLeads();
 
   return (
     <div className="container mt-4">
@@ -34,10 +50,10 @@ const CounsellorLeads = () => {
         <>
           <h3 className="mb-4 fw-bold text-primary">Counsellor Details</h3>
           <div className="counsellor-info mb-4 row">
-            <p className='col-lg-4 col-md-auto col-sm-auto fw-bold lead'><strong>ID:</strong> {data.counsellor.counsellor_id}</p>
-            <p className='col-lg-4 col-md-auto col-sm-auto fw-bold lead'><strong>Name:</strong> {data.counsellor.counsellor_name || 'N/A'}</p>
-            <p className='col-lg-4 col-md-auto col-sm-auto fw-bold lead'><strong>Email:</strong> {data.counsellor.counsellor_email}</p>
-            <p className='col-lg-4 col-md-auto col-sm-auto fw-bold lead'><strong>Phone:</strong> {data.counsellor.counsellor_phone}</p>
+            <p className="col-lg-4 col-md-auto col-sm-auto fw-bold lead"><strong>ID:</strong> {data.counsellor.counsellor_id}</p>
+            <p className="col-lg-4 col-md-auto col-sm-auto fw-bold lead"><strong>Name:</strong> {data.counsellor.counsellor_name || 'N/A'}</p>
+            <p className="col-lg-4 col-md-auto col-sm-auto fw-bold lead"><strong>Email:</strong> {data.counsellor.counsellor_email}</p>
+            <p className="col-lg-4 col-md-auto col-sm-auto fw-bold lead"><strong>Phone:</strong> {data.counsellor.counsellor_phone}</p>
           </div>
 
           <h3 className="mb-4">Assigned Leads</h3>
@@ -57,7 +73,7 @@ const CounsellorLeads = () => {
               </tr>
             </thead>
             <tbody>
-              {data.leads.map((lead) => (
+              {paginatedLeads.map((lead) => (
                 <tr key={lead.lead_id}>
                   <td>{lead.lead_id}</td>
                   <td>{lead.lead_name}</td>
@@ -73,6 +89,12 @@ const CounsellorLeads = () => {
               ))}
             </tbody>
           </Table>
+          <Paginate
+            currentPage={currentPage}
+            totalItems={data.leads.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={handlePageChange}
+          />
         </>
       )}
     </div>

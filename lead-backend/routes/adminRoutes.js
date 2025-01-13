@@ -7,8 +7,12 @@ adminRouter.get('/get-all-counsellors',authenticateToken, adminController.getAll
 
 adminRouter.post('/get-leads-by-counsellor', adminController.getAllLeadsForCounsellor);
 
-adminRouter.get('/getAllLeadsAndCounsellors', adminController.getAllLeadsAndCounsellors);
+adminRouter.get('/getAllLeadsAndCounsellors', authenticateToken, adminController.getAllLeadsAndCounsellors);
 
-adminRouter.get('/dashboard-overview', adminController.getDashboardOverview);
+adminRouter.get('/dashboard-overview', authenticateToken, adminController.getDashboardOverview);
+
+adminRouter.post('/adminConfig/saveAdminConfig', authenticateToken, adminController.saveAdminConfig);
+
+adminRouter.get('/super-admin/admin-details', authenticateToken, adminController.getAllAdmin);
 
 module.exports = adminRouter;

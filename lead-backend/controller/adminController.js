@@ -1,9 +1,10 @@
-const { Op } = require('sequelize');
+const { Op, and } = require('sequelize');
 const db = require('../models');
 
 const Counsellor = db.Counsellor;
 const LeadCounsellor = db.LeadCounsellor;
 const Lead = db.Lead;
+const AdminConfig = db.AdminConfig;
 
 const getAllCounsellors = async (req, res) => {
     try {
@@ -16,20 +17,21 @@ const getAllCounsellors = async (req, res) => {
 
         const role = user.role;
 
-        // Check if the role is COUNSELLOR
+        // Check if the role is ADMIN
         if (role !== 'ADMIN') {
             return res.status(403).send({ message: "Access denied. Insufficient permissions." });
         }
 
-        // Fetch all counsellors except those with the role 'ADMIN'
+        // Fetch all counsellors except those with the roles 'ADMIN' and 'SUPER ADMIN'
         const counsellors = await Counsellor.findAll({
             attributes: {
                 exclude: ['password'] // exclude password column
             },
             where: {
                 role: {
-                    [Op.ne]: 'ADMIN' // exclude role 'ADMIN'
-                }
+                    [Op.notIn]: ['ADMIN', 'SUPER ADMIN'] // exclude roles 'ADMIN' and 'SUPER ADMIN'
+                },
+                assigned_by : userId
             }
         });
 
@@ -45,6 +47,42 @@ const getAllCounsellors = async (req, res) => {
         return res.status(500).send({ message: "Failed to retrieve counsellors", error });
     }
 };
+
+const getAllAdmin = async (req, res) => {
+    try {
+        const userId = req.counsellor_id;
+        const user = await Counsellor.findByPk(userId);
+
+        if (!user) {
+            return res.status(404).send({ message: "No user found" });
+        }
+
+        if (user.role !== 'SUPER ADMIN') {
+            return res.status(403).send({ message: "Access denied. Insufficient permissions." });
+        }
+
+        const counsellors = await Counsellor.findAll({
+            attributes: { exclude: ['password'] },
+            where: { role: 'ADMIN' },
+            include: [
+                {
+                    model: AdminConfig,
+                    as: 'adminconfig',
+                },
+            ],
+        });
+
+        if (!counsellors.length) {
+            return res.status(404).send({ message: "No counsellors found" });
+        }
+
+        return res.status(200).send({ message: "Counsellors retrieved successfully", counsellors });
+    } catch (error) {
+        console.error("Error retrieving counsellors:", error);
+        return res.status(500).send({ message: "Failed to retrieve counsellors", error });
+    }
+};
+
 
 const getAllLeadsForCounsellor = async (req, res) => {
     try {
@@ -174,9 +212,13 @@ const getAllLeadsForCounsellor = async (req, res) => {
 // };
 
 const getAllLeadsAndCounsellors = async (req, res) => {
+    const userId = req.counsellor_id;
     try {
         // Fetch all leads along with their associated counsellors and LeadCounsellor data
         const leads = await Lead.findAll({
+            where:{
+                counsellor_id : userId
+            },
             include: [
                 {
                     model: Counsellor,
@@ -232,63 +274,172 @@ const getAllLeadsAndCounsellors = async (req, res) => {
 };
 
 
+// const getDashboardOverview = async (req, res) => {
+//     try {
+//         const userId = req.counsellor_id;
+//         // Total number of leads
+//         const totalLeads = await Lead.count();
+
+//         // Number of leads that have joined
+//         const totalJoinedLeads = await Lead.count({ where: { joining_status: true } });
+
+//         // Number of leads that are interested and active
+//         const totalInterestedLeads = await LeadCounsellor.count({ 
+//             where: { 
+//                 is_interested: true,
+//                 is_active: true  // Filter by is_active being true
+//             } 
+//         });
+
+//         // Counsellor-wise count of joined leads
+//         const counsellorJoinedLeads = await LeadCounsellor.findAll({
+//             where: { responsible_for_joining: true },
+//             include: [
+//                 {
+//                     model: Counsellor,
+//                     as: 'Counsellor',
+//                     attributes: ['counsellor_id', 'name', 'email'],
+//                 },
+//             ],
+//             attributes: [
+//                 'counsellor_id',
+//                 [db.sequelize.fn('COUNT', db.sequelize.col('lead_id')), 'joined_leads_count'],
+//             ],
+//             group: ['LeadCounsellor.counsellor_id'],
+//             order: [[db.sequelize.literal('joined_leads_count'), 'DESC']],
+//         });
+
+//         // Counsellor-wise count of interested and active leads
+//         const counsellorInterestedLeads = await LeadCounsellor.findAll({
+//             where: { 
+//                 is_interested: true,
+//                 is_active: true , // Filter by is_active being true
+//             },
+//             include: [
+//                 {
+//                     model: Counsellor,
+//                     as: 'Counsellor',
+//                     attributes: ['counsellor_id', 'name', 'email'],
+//                 },
+//             ],
+//             attributes: [
+//                 'counsellor_id',
+//                 [db.sequelize.fn('COUNT', db.sequelize.col('lead_id')), 'interested_leads_count'],
+//             ],
+//             group: ['LeadCounsellor.counsellor_id'],
+//             order: [[db.sequelize.literal('interested_leads_count'), 'DESC']],
+//         });
+
+//         // Send the aggregated data as response
+//         res.status(200).json({
+//             totalLeads,
+//             totalJoinedLeads,
+//             totalInterestedLeads,
+//             counsellorJoinedLeads,
+//             counsellorInterestedLeads,
+//         });
+//     } catch (error) {
+//         console.error('Error fetching dashboard overview:', error);
+//         res.status(500).json({ message: 'Internal server error' });
+//     }
+// };
+
+
 const getDashboardOverview = async (req, res) => {
     try {
-        // Total number of leads
-        const totalLeads = await Lead.count();
+        const userId = req.counsellor_id; // Extract counsellor ID from the request
+        const user = await Counsellor.findByPk(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: "No User Found" });
+        }
+
+        const userRole = user.role;
+
+        // Fetch counsellors assigned by this admin (if user is ADMIN)
+        let counsellors = [];
+        if (userRole === "ADMIN") {
+            counsellors = await Counsellor.findAll({
+                where: { assigned_by: userId },
+                attributes: ["counsellor_id", "name", "email"],
+            });
+        }
+
+        const counsellorIds = counsellors.map((c) => c.counsellor_id);
+
+        // Define filters
+        const leadsFilter = userRole === "ADMIN" ?{ counsellor_id: userId } : { counsellor_id: counsellorIds } ;
+        const counsellorFilter = userRole === "ADMIN" ? { counsellor_id: counsellorIds } : { counsellor_id: userId };
+
+        // **Total number of leads assigned to counsellors under this admin**
+        const totalLeads = await Lead.count({
+            where: leadsFilter,
+        });
+        console.log("toltal lead count +++++++", totalLeads)
 
         // Number of leads that have joined
-        const totalJoinedLeads = await Lead.count({ where: { joining_status: true } });
+        const totalJoinedLeads = await Lead.count({
+            where: {
+                ...leadsFilter,
+                joining_status: true,
+            },
+        });
+
 
         // Number of leads that are interested and active
-        const totalInterestedLeads = await LeadCounsellor.count({ 
-            where: { 
+        const totalInterestedLeads = await LeadCounsellor.count({
+            where: {
+                ...counsellorFilter,
                 is_interested: true,
-                is_active: true  // Filter by is_active being true
-            } 
+                is_active: true,
+            },
         });
 
         // Counsellor-wise count of joined leads
         const counsellorJoinedLeads = await LeadCounsellor.findAll({
-            where: { responsible_for_joining: true },
-            include: [
-                {
-                    model: Counsellor,
-                    as: 'Counsellor',
-                    attributes: ['counsellor_id', 'name', 'email'],
-                },
-            ],
-            attributes: [
-                'counsellor_id',
-                [db.sequelize.fn('COUNT', db.sequelize.col('lead_id')), 'joined_leads_count'],
-            ],
-            group: ['LeadCounsellor.counsellor_id'],
-            order: [[db.sequelize.literal('joined_leads_count'), 'DESC']],
-        });
-
-        // Counsellor-wise count of interested and active leads
-        const counsellorInterestedLeads = await LeadCounsellor.findAll({
-            where: { 
-                is_interested: true,
-                is_active: true  // Filter by is_active being true
+            where: {
+                responsible_for_joining: true,
+                ...counsellorFilter,
             },
             include: [
                 {
                     model: Counsellor,
-                    as: 'Counsellor',
-                    attributes: ['counsellor_id', 'name', 'email'],
+                    as: "Counsellor",
+                    attributes: ["counsellor_id", "name", "email"],
                 },
             ],
             attributes: [
-                'counsellor_id',
-                [db.sequelize.fn('COUNT', db.sequelize.col('lead_id')), 'interested_leads_count'],
+                "counsellor_id",
+                [db.sequelize.fn("COUNT", db.sequelize.col("lead_id")), "joined_leads_count"],
             ],
-            group: ['LeadCounsellor.counsellor_id'],
-            order: [[db.sequelize.literal('interested_leads_count'), 'DESC']],
+            group: ["LeadCounsellor.counsellor_id"],
+            order: [[db.sequelize.literal("joined_leads_count"), "DESC"]],
+        });
+
+        // Counsellor-wise count of interested and active leads
+        const counsellorInterestedLeads = await LeadCounsellor.findAll({
+            where: {
+                ...counsellorFilter,
+                is_interested: true,
+                is_active: true,
+            },
+            include: [
+                {
+                    model: Counsellor,
+                    as: "Counsellor",
+                    attributes: ["counsellor_id", "name", "email"],
+                },
+            ],
+            attributes: [
+                "counsellor_id",
+                [db.sequelize.fn("COUNT", db.sequelize.col("lead_id")), "interested_leads_count"],
+            ],
+            group: ["LeadCounsellor.counsellor_id"],
+            order: [[db.sequelize.literal("interested_leads_count"), "DESC"]],
         });
 
         // Send the aggregated data as response
-        res.status(200).json({
+        return res.status(200).json({
             totalLeads,
             totalJoinedLeads,
             totalInterestedLeads,
@@ -296,19 +447,82 @@ const getDashboardOverview = async (req, res) => {
             counsellorInterestedLeads,
         });
     } catch (error) {
-        console.error('Error fetching dashboard overview:', error);
-        res.status(500).json({ message: 'Internal server error' });
+        console.error("Error fetching dashboard overview:", error);
+        return res.status(500).json({ message: "Internal server error" });
     }
 };
 
 
 
 
+const saveAdminConfig = async (req, res) => {
+    try {
+        const userId = req.counsellor_id;
+        const user = await Counsellor.findByPk(userId);
+
+        if (!user) {
+            return res.status(404).send({ message: "No user found" });
+        }
+
+        const role = user.role;
+
+        // Check if the role is ADMIN
+        if (role !== 'SUPER ADMIN') {
+            return res.status(403).send({ message: "Access denied. Insufficient permissions." });
+        }
+
+        const {
+            whatsapp_token,
+            check_token,
+            business_id,
+            app_id,
+            phone_number_id,
+            email_username,
+            email_password,
+            client_name,
+            admin_id,
+        } = req.body;
+
+        // Check if the AdminConfig already exists for this admin
+        const existingConfig = await AdminConfig.findOne({
+            where: { counsellor_id: admin_id },
+        });
+
+        if (existingConfig) {
+            return res.status(409).send({ message: "Configuration already exists for this admin" });
+        }
+
+        // Create a new AdminConfig record
+        const newConfig = await AdminConfig.create({
+            counsellor_id: admin_id, 
+            whatsapp_token,
+            check_token,
+            business_id,
+            app_id,
+            phone_number_id,
+            email_username,
+            email_password,
+            client_name,
+        });
+
+        return res.status(201).send({
+            message: "Configuration saved successfully",
+            config: newConfig,
+        });
+    } catch (error) {
+        console.error("Error saving admin configuration:", error);
+        return res.status(500).send({ message: "Failed to save configuration", error });
+    }
+};
+
+
 
 
 module.exports = {
     getAllCounsellors,
+    getAllAdmin,
     getAllLeadsForCounsellor,
     getAllLeadsAndCounsellors,
-    getDashboardOverview
+    getDashboardOverview,
+    saveAdminConfig,
 }

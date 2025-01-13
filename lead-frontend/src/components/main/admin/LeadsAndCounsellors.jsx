@@ -59,7 +59,7 @@
 //             <p><strong>Email:</strong> {lead.lead_email}</p>
 //             <p><strong>Phone:</strong> {lead.lead_phone}</p>
 //             <p><strong>Joining Status:</strong> {lead.lead_joining_status ? 'Joined' : 'Not Joined'}</p>
-            
+
 //             <Table striped bordered hover>
 //               <thead>
 //                 <tr>
@@ -107,12 +107,12 @@
 
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Table, Button, Form, Pagination } from 'react-bootstrap';
+import { Table, Button, Form } from 'react-bootstrap';
 import { toast } from 'react-hot-toast';
-import 'bootstrap/dist/css/bootstrap.min.css';
 import { baseURL } from '../../config';
-import LeadCounsellorDetailsModal from './LeadCounsellorDetailsModal'; // Import the modal
+import LeadCounsellorDetailsModal from './LeadCounsellorDetailsModal';
 import { Link } from 'react-router-dom';
+import Paginate from '../../common/Paginate';
 
 const LeadsAndCounsellors = () => {
   const [leads, setLeads] = useState([]);
@@ -151,45 +151,9 @@ const LeadsAndCounsellors = () => {
     fetchLeads();
   }, []);
 
-  const handleViewDetails = (lead) => {
-    setSelectedLead(lead);
-    setShowModal(true);
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
   };
-
-  const handleClose = () => setShowModal(false);
-
-  const handleSearch = (e) => {
-    const value = e.target.value.toLowerCase();
-    setSearchQuery(value);
-    filterLeads(value, selectedCounsellor);
-  };
-
-  const handleCounsellorFilter = (e) => {
-    const value = e.target.value;
-    setSelectedCounsellor(value);
-    filterLeads(searchQuery, value);
-  };
-
-  const filterLeads = (search, counsellor) => {
-    let filtered = leads.filter((lead) => 
-      (lead.lead_name?.toLowerCase() || '').includes(search) || 
-      (lead.lead_email?.toLowerCase() || '').includes(search) || 
-      (lead.lead_phone || '').includes(search)
-    );
-  
-    if (counsellor) {
-      filtered = filtered.filter((lead) => 
-        lead.counsellors.some(c => 
-          (c.counsellor_name || '').toLowerCase() === counsellor.toLowerCase() || 
-          (c.counsellor_email || '').toLowerCase() === counsellor.toLowerCase()
-        )
-      );
-    }
-  
-    setFilteredLeads(filtered);
-    setCurrentPage(1); // Reset to first page after filtering
-  };
-  
 
   const paginateLeads = () => {
     const indexOfLastLead = currentPage * itemsPerPage;
@@ -197,37 +161,22 @@ const LeadsAndCounsellors = () => {
     return filteredLeads.slice(indexOfFirstLead, indexOfLastLead);
   };
 
-  const totalPages = Math.ceil(filteredLeads.length / itemsPerPage);
-
   return (
     <div className="container mt-4">
       <div className="container ">
-        <Link to='/assign-lead-to-counsellor' className='btn btn-outline-primary' >Reassign Leads to Counsellor</Link>
+        <Link to="/assign-lead-to-counsellor" className="btn btn-outline-primary">
+          Reassign Leads to Counsellor
+        </Link>
       </div>
       <h2>Leads and Counsellors</h2>
 
       <div className="mb-3">
-        <Form.Control 
-          type="text" 
-          placeholder="Search by name, email, or phone number" 
+        <Form.Control
+          type="text"
+          placeholder="Search by name, email, or phone number"
           value={searchQuery}
-          onChange={handleSearch}
+          onChange={(e) => setSearchQuery(e.target.value)}
         />
-      </div>
-
-      <div className="mb-3">
-        <Form.Control as="select" value={selectedCounsellor} onChange={handleCounsellorFilter}>
-          <option value="">Filter by Counsellor</option>
-          {leads.flatMap(lead => lead.counsellors)
-            .map(counsellor => counsellor.counsellor_name || counsellor.counsellor_email)
-            .filter((c, index, self) => self.indexOf(c) === index) // Unique values
-            .map(counsellor => (
-              <option key={counsellor} value={counsellor}>
-                {counsellor}
-              </option>
-            ))
-          }
-        </Form.Control>
       </div>
 
       <Table responsive bordered>
@@ -242,7 +191,7 @@ const LeadsAndCounsellors = () => {
         </thead>
         <tbody>
           {paginateLeads().map((lead) => {
-            const activeCounsellor = lead.counsellors.find(c => c.is_active);
+            const activeCounsellor = lead.counsellors.find((c) => c.is_active);
             return (
               <tr key={lead.lead_id}>
                 <td>{lead.lead_name}</td>
@@ -254,7 +203,7 @@ const LeadsAndCounsellors = () => {
                     : 'No active counsellor'}
                 </td>
                 <td>
-                  <Button variant="primary" onClick={() => handleViewDetails(lead)}>
+                  <Button variant="primary" onClick={() => setSelectedLead(lead)}>
                     View Details
                   </Button>
                 </td>
@@ -264,25 +213,16 @@ const LeadsAndCounsellors = () => {
         </tbody>
       </Table>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <Pagination className="justify-content-center">
-          {[...Array(totalPages)].map((_, index) => (
-            <Pagination.Item 
-              key={index + 1} 
-              active={index + 1 === currentPage} 
-              onClick={() => setCurrentPage(index + 1)}
-            >
-              {index + 1}
-            </Pagination.Item>
-          ))}
-        </Pagination>
-      )}
+      <Paginate
+        currentPage={currentPage}
+        totalItems={filteredLeads.length}
+        itemsPerPage={itemsPerPage}
+        onPageChange={handlePageChange}
+      />
 
-      {/* Pass the required props to the modal */}
       <LeadCounsellorDetailsModal
         showModal={showModal}
-        handleClose={handleClose}
+        handleClose={() => setShowModal(false)}
         selectedLead={selectedLead}
       />
     </div>
@@ -290,5 +230,3 @@ const LeadsAndCounsellors = () => {
 };
 
 export default LeadsAndCounsellors;
-
-

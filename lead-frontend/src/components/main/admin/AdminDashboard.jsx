@@ -16,7 +16,21 @@ const AdminDashboard = () => {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const response = await axios.get(`${baseURL}/api/admin/dashboard-overview`);
+        const token = localStorage.getItem('token');
+        if (!token) {
+          console.log('No token provided.');
+          return;
+        }
+
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        };
+
+        const response = await axios.get(`${baseURL}/api/admin/dashboard-overview`,
+          config
+        );
         setDashboardData(response.data);
       } catch (error) {
         toast.error('Failed to fetch dashboard data');

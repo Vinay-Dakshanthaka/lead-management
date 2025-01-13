@@ -9,8 +9,8 @@ const TemplateImage = db.TemplateImage;
 
 const createWhatsAppTemplate = async (req, res) => {
     try {
-        const accessToken = process.env.WHATSAPP_TOKEN; // Your WhatsApp API token
-        const businessId = process.env.BUSINESS_ID; // Your business account ID
+        const accessToken = process.env.WHATSAPP_TOKEN; 
+        const businessId = process.env.BUSINESS_ID;
 
         // Extract template data from the request body
         const { name, category, language, bodyText, buttons } = req.body;
@@ -383,6 +383,7 @@ const registerPhoneNumber = async (req, res) => {
 
 
 const sendMediaTemplateMessage = async (req, res) => {
+    
     try {
         const {
             to,
@@ -395,6 +396,8 @@ const sendMediaTemplateMessage = async (req, res) => {
             fallbackDate,
         } = req.body; // Destructure necessary data from the request body
 
+        // const accessToken = process.env.WHATSAPP_TOKEN; // WhatsApp API token
+        // const phoneNumberId = process.env.PHONE_NUMBER_ID; // WhatsApp Business Phone Number ID
         const accessToken = process.env.WHATSAPP_TOKEN; // WhatsApp API token
         const phoneNumberId = process.env.PHONE_NUMBER_ID; // WhatsApp Business Phone Number ID
 

@@ -50,6 +50,7 @@ const AdminNavbar = () => {
       <Nav.Link as={Link} to="/group-management">Lead Groups</Nav.Link>
       <Nav.Link as={Link} to="/create-template">Templates</Nav.Link>
       <Nav.Link as={Link} to="/whatsApp-leads">WhatsApp Leads</Nav.Link>
+      <Nav.Link as={Link} to="/message-status-list">WhatsApp Leads</Nav.Link>
     </>
   );
 };

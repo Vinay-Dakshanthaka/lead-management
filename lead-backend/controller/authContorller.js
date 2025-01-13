@@ -16,54 +16,64 @@ const signUp = async (req, res) => {
     try {
         const userId = req.counsellor_id;
         const user = await Counsellor.findByPk(userId);
-        
+
         if (!user) {
             return res.status(404).send({ message: "No user found" });
         }
 
         const role = user.role;
 
-        // Check if the role is COUNSELLOR
-        if (role !== 'ADMIN') {
+        // Check if the role is ADMIN or SUPER ADMIN
+        if (role !== 'ADMIN' && role !== 'SUPER ADMIN') {
             return res.status(403).send({ message: "Access denied. Insufficient permissions." });
         }
 
-        const { email, phone, password, is_active = true } = req.body;
+        const { email, phone, password, is_active = true, userRole } = req.body;
+        console.log("usere role -----: ", userRole   )
 
-        // Check if a counsellor already exists with the provided email or phone
-        const existingCounsellor = await Counsellor.findOne({
+        // Validate userRole
+        const validRoles = ['ADMIN', 'COUNSELLOR'];
+        if (!validRoles.includes(userRole)) {
+            return res.status(400).send({ message: "Invalid role specified" });
+        }
+
+        // Check if a user already exists with the provided email or phone
+        const existingUser = await Counsellor.findOne({
             where: {
                 [Op.or]: [{ email }, { phone }]
             }
         });
-        if (existingCounsellor) {
-            return res.status(409).send({ message: "Counsellor with this email or phone number already exists" });
+        if (existingUser) {
+            return res.status(409).send({ message: "User with this email or phone number already exists" });
         }
 
-        // Keep original password for email
-        const plainPassword = password;
-
         // Hash the password with 10 salt rounds for storage in DB
-        const hashedPassword = await bcrypt.hash(plainPassword, saltRounds);
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-        // Create a new counsellor with the hashed password
-        const newCounsellor = await Counsellor.create({
+        // Create a new user with the hashed password and specified role
+        const newUser = await Counsellor.create({
             email,
             phone,
             password: hashedPassword,
             is_active,
+            role: userRole // Assign the correct role from the request body
         });
 
         // Send welcome email with plain password
-        await sendWelcomeEmail(email, plainPassword); // Using plainPassword here
+        try {
+            await sendWelcomeEmail(email, password); // Sending plain password in email
+        } catch (error) {
+            return res.status(535).send({message : "Account created successfully : Failed to send eamil"})
+        }
 
-        return res.status(201).send({ message: "Account Created successfully", counsellor: newCounsellor });
+        return res.status(201).send({ message: "Account created successfully", user: newUser });
 
     } catch (error) {
-        console.error("Error creating counsellor:", error);
-        return res.status(500).send({ message: "Failed to create Account", error });
+        console.error("Error creating user:", error);
+        return res.status(500).send({ message: "Failed to create account", error });
     }
 };
+
 
 const signUpWithDummyPassword = async (req, res) => {
     try {
@@ -105,6 +115,7 @@ const signUpWithDummyPassword = async (req, res) => {
             phone,
             password: hashedPassword,
             is_active,
+            assigned_by: userId
         });
 
         // Send welcome email with the dummy password

@@ -15,8 +15,14 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: true, // Optional field to describe the group
         },
         created_by: {
-            type: DataTypes.STRING,
-            allowNull: false, // Name or ID of the user who created the group
+            type: DataTypes.INTEGER,
+            allowNull: true,
+            references: {
+                model: "Counsellors", // Refers to the Counsellor model
+                key: "counsellor_id"
+            },
+            onUpdate: "CASCADE",
+            onDelete: "SET NULL"
         },
         is_active: {
             type: DataTypes.BOOLEAN,
