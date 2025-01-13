@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { baseURL } from "../../config";
 import toast from "react-hot-toast";
+import Paginate from "../../common/Paginate";
 
 const CreateLeadGroup = () => {
     const [groupName, setGroupName] = useState("");
@@ -12,7 +13,7 @@ const CreateLeadGroup = () => {
     const [loading, setLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
-    const leadsPerPage = 10;
+    const leadsPerPage = 10; 
 
     // Fetch leads data
     useEffect(() => {
@@ -38,7 +39,6 @@ const CreateLeadGroup = () => {
         fetchLeads();
     }, []);
 
-    // Handle form submission
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -115,10 +115,19 @@ console.log("payload :", payload)
         setCurrentPage(1);
     }, [searchQuery, leads]);
 
-    // Get leads for current page
-    const indexOfLastLead = currentPage * leadsPerPage;
-    const indexOfFirstLead = indexOfLastLead - leadsPerPage;
-    const currentLeads = filteredLeads.slice(indexOfFirstLead, indexOfLastLead);
+    // Paginate leads for the current page
+    const paginateLeads = () => {
+        const indexOfLastLead = currentPage * leadsPerPage;
+        const indexOfFirstLead = indexOfLastLead - leadsPerPage;
+        return filteredLeads.slice(indexOfFirstLead, indexOfLastLead);
+    };
+
+    // Leads to be displayed on the current page
+    const currentLeads = paginateLeads();
+
+    const handlePageChange = (page) => {
+        setCurrentPage(page);
+    };
 
     return (
         <div className="container mt-5">
@@ -212,24 +221,12 @@ console.log("payload :", payload)
                                     ))}
                                 </tbody>
                             </table>
-                            <nav>
-                                <ul className="pagination">
-                                    {Array.from(
-                                        { length: Math.ceil(filteredLeads.length / leadsPerPage) },
-                                        (_, index) => (
-                                            <li
-                                                key={index}
-                                                className={`page-item ${
-                                                    index + 1 === currentPage ? "active" : ""
-                                                }`}
-                                                onClick={() => setCurrentPage(index + 1)}
-                                            >
-                                                <button className="page-link">{index + 1}</button>
-                                            </li>
-                                        )
-                                    )}
-                                </ul>
-                            </nav>
+                            <Paginate
+                                currentPage={currentPage}
+                                totalItems={filteredLeads.length}
+                                itemsPerPage={leadsPerPage}
+                                onPageChange={handlePageChange}
+                            />
                         </>
                     ) : (
                         <p>No leads available.</p>
@@ -238,7 +235,7 @@ console.log("payload :", payload)
             </form>
             <button
                 type="submit"
-                className="btn btn-primary  m-3"
+                className="btn btn-primary m-3"
                 disabled={loading}
                 onClick={handleSubmit}
             >
