@@ -358,14 +358,14 @@ const LeadDetails = ({ selectedImage, templateName, templateLanguage }) => {
               ...prev,
               [lead.lead_id]: 'success',
             }));
-            toast.success(`Message sent to ${lead_name}`);
+            // toast.success(`Message sent to ${lead_name}`);
           } catch (error) {
             console.error('Error sending message:', error);
             setMessageStatus((prev) => ({
               ...prev,
               [lead.lead_id]: 'failure',
             }));
-            toast.error(`Failed to send message to ${lead_name}`);
+            // toast.error(`Failed to send message to ${lead_name}`);
           }
         }else if(templateName === 'video_template'){
           const laraTemplatepayload = {
