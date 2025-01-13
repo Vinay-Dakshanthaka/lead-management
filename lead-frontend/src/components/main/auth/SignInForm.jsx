@@ -23,15 +23,15 @@ const SignInForm = () => {
     e.preventDefault();
 
     const { email, password } = formData;
-    let formErrors = {};
+    let forrors = {};
 
     // Form validations
-    if (!validateEmail(email)) formErrors.email = "Invalid email format";
-    if (!validatePassword(password)) formErrors.password = "Password is required";
+    if (!validateEmail(email)) forrors.email = "Invalid email format";
+    if (!validatePassword(password)) forrors.password = "Password is required";
 
-    setErrors(formErrors);
+    setErrors(forrors);
 
-    if (Object.keys(formErrors).length === 0) {
+    if (Object.keys(forrors).length === 0) {
       try {
         const response = await axios.post(`${baseURL}/api/auth/sign-in`, { email, password });
         // console.log(response.data);

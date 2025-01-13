@@ -204,7 +204,7 @@ const saveLeadData = async (req, res) => {
 const reAssignLead = async (req, res) => {
     try {
         const { lead_id, counsellor_id } = req.body;
-
+           console.log(req.body,"---------------------------------")
         if (!lead_id || !counsellor_id) {
             return res.status(400).send({ message: "Lead ID and Counsellor ID are required" });
         }
@@ -214,18 +214,18 @@ const reAssignLead = async (req, res) => {
         if (!lead) {
             return res.status(404).send({ message: "Lead not found" });
         }
-
+        console.log(lead,"----------------------------------lead")
         // Check if the counsellor exists
         const counsellor = await Counsellor.findByPk(counsellor_id);
         if (!counsellor) {
             return res.status(404).send({ message: "Counsellor not found" });
         }
-
+         console.log(counsellor,"------------------------counsellor")
         // Get the currently active counsellor for the lead
         const activeCounsellor = await LeadCounsellor.findOne({
             where: { lead_id, is_active: true }
         });
-
+         console.log(activeCounsellor,"----------------------activecounsellor")
         if (activeCounsellor) {
             // Set the current active counsellor to inactive
             await LeadCounsellor.update(
@@ -236,7 +236,7 @@ const reAssignLead = async (req, res) => {
 
         // Assign the new counsellor to the lead and set them as active
         const assignedDate = moment().format('YYYY-MM-DD HH:mm:ss');  // Store date and time
-
+        console.log("hello--------------------------")
         await LeadCounsellor.create({
             lead_id,
             counsellor_id,

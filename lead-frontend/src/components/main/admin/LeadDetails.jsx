@@ -278,7 +278,7 @@ const LeadDetails = ({ selectedImage, templateName, templateLanguage }) => {
         };
 
         const response = await axios.get(`${baseURL}/api/leadGroup/getAllLeadGroups`, config);
-        setGroups(response.data.groups);
+        setGroups(response.data.groups);       
       } catch (error) {
         console.error('Error fetching groups:', error);
         toast.error('Failed to fetch groups');

@@ -24,6 +24,7 @@ const LeadGroupManager = () => {
       setGroups(response.data.groups || []);
       console.log(response.data.groups)
     } catch (error) {
+      console.log(error,"----------------")
       toast.error(error.response?.data?.message || "Failed to fetch groups.");
     } finally {
       setLoading(false);
