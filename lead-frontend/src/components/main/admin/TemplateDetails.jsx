@@ -98,7 +98,7 @@ const TemplateDetails = ({ template, onBack }) => {
           )}
         </div>
       )}
-      <LeadDetails selectedImage={selectedImage} templateName={template.name} templateLanguage={template.language} />
+      <LeadDetails selectedImage={selectedImage} template={template}/>
     </div>
   );
 };

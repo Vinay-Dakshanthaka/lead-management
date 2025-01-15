@@ -12,8 +12,63 @@ const AdminConfig = db.AdminConfig;
 
 const createWhatsAppTemplate = async (req, res) => {
     try {
-        const accessToken = process.env.WHATSAPP_TOKEN; 
-        const businessId = process.env.BUSINESS_ID;
+    const userId = req.counsellor_id;
+    // console.log("requested user :: ", userId)
+
+    let adminConfigData;
+    const user = await Counsellor.findByPk(userId);
+
+    if (!user) {
+      return res.status(404).send({ message: "user not found" });
+    }
+
+
+
+    if (user.role === 'COUNSELLOR') {
+      console.log("user role ::: ", user.role)
+
+      console.log("user found :: ", user.assigned_by)
+      if (!user.assigned_by) {
+        return res.status(403).send({ message: "Access Forbidden. No Admin found for this counsellor" })
+      }
+      const counsellorAdmin = await Counsellor.findOne(
+        {
+          where: {
+            assigned_by: user.assigned_by,
+          }
+        }
+      )
+
+
+      console.log("counsellorAdmin found =======", counsellorAdmin)
+
+
+      adminConfigData = await AdminConfig.findOne({
+        where: {
+          counsellor_id: counsellorAdmin.assigned_by
+        }
+      })
+
+      if (!adminConfigData) {
+        return res.status(401).send({ message: 'Unauthorized : No config for the asssigned admin.' })
+      }
+
+      console.log("amdin config data :: ", adminConfigData)
+    }
+
+    if (user.role === 'ADMIN') {
+      adminConfigData = await AdminConfig.findOne({
+        where: {
+          counsellor_id: user.counsellor_id
+        }
+      })
+      if (!adminConfigData) {
+        return res.status(401).send({ message: 'Unauthorized : No config for this admin.' })
+      }
+
+    }
+        const accessToken = adminConfigData.whatsapp_token; 
+        const businessId = adminConfigData.business_id;
 
         // Extract template data from the request body
         const { name, category, language, bodyText, buttons } = req.body;
@@ -266,8 +321,63 @@ const createWhatsAppTemplate = async (req, res) => {
       if (!file) {
         return res.status(400).json({ error: "No file uploaded" });
       }
+
+      const userId = req.counsellor_id;
+      console.log("requested user :: ", userId)
   
-      const accessToken = process.env.WHATSAPP_TOKEN;
+      let adminConfigData;
+      const user = await Counsellor.findByPk(userId);
+  
+      if (!user) {
+        return res.status(404).send({ message: "user not found" });
+      }
+  
+  
+  
+      if (user.role === 'COUNSELLOR') {
+        console.log("user role ::: ", user.role)
+  
+        console.log("user found :: ", user.assigned_by)
+        if (!user.assigned_by) {
+          return res.status(403).send({ message: "Access Forbidden. No Admin found for this counsellor" })
+        }
+        const counsellorAdmin = await Counsellor.findOne(
+          {
+            where: {
+              assigned_by: user.assigned_by,
+            }
+          }
+        )
+  
+  
+        console.log("counsellorAdmin found =======", counsellorAdmin)
+  
+  
+        adminConfigData = await AdminConfig.findOne({
+          where: {
+            counsellor_id: counsellorAdmin.assigned_by
+          }
+        })
+  
+        if (!adminConfigData) {
+          return res.status(401).send({ message: 'Unauthorized : No config for the asssigned admin.' })
+        }
+  
+        console.log("amdin config data :: ", adminConfigData)
+      }
+  
+      if (user.role === 'ADMIN') {
+        adminConfigData = await AdminConfig.findOne({
+          where: {
+            counsellor_id: user.counsellor_id
+          }
+        })
+        if (!adminConfigData) {
+          return res.status(401).send({ message: 'Unauthorized : No config for this admin.' })
+        }
+  
+      }
+      const accessToken = adminConfigData.whatsapp_token;
       const formData = new FormData();
   
       // Append the file to the form data
@@ -275,7 +385,7 @@ const createWhatsAppTemplate = async (req, res) => {
       formData.append("type", file.mimetype);
   
       const response = await axios.post(
-        `https://graph.facebook.com/v21.0/${process.env.PHONE_NUMBER_ID}/media`,
+        `https://graph.facebook.com/v21.0/${adminConfigData.phone_number_id}/media`,
         formData,
         {
           headers: {
@@ -299,8 +409,63 @@ const createWhatsAppTemplate = async (req, res) => {
 const checkTemplateStatus = async (req, res) => {
     try {
         const { templateName } = req.body; // Expecting the template name in the request body
-        const accessToken = process.env.WHATSAPP_TOKEN; // WhatsApp API token
-        const businessId = process.env.BUSINESS_ID; // WhatsApp Business Account ID
+        const userId = req.counsellor_id;
+    console.log("requested user :: ", userId)
+
+    let adminConfigData;
+    const user = await Counsellor.findByPk(userId);
+
+    if (!user) {
+      return res.status(404).send({ message: "user not found" });
+    }
+
+
+
+    if (user.role === 'COUNSELLOR') {
+      console.log("user role ::: ", user.role)
+
+      console.log("user found :: ", user.assigned_by)
+      if (!user.assigned_by) {
+        return res.status(403).send({ message: "Access Forbidden. No Admin found for this counsellor" })
+      }
+      const counsellorAdmin = await Counsellor.findOne(
+        {
+          where: {
+            assigned_by: user.assigned_by,
+          }
+        }
+      )
+
+
+      console.log("counsellorAdmin found =======", counsellorAdmin)
+
+
+      adminConfigData = await AdminConfig.findOne({
+        where: {
+          counsellor_id: counsellorAdmin.assigned_by
+        }
+      })
+
+      if (!adminConfigData) {
+        return res.status(401).send({ message: 'Unauthorized : No config for the asssigned admin.' })
+      }
+
+      console.log("amdin config data :: ", adminConfigData)
+    }
+
+    if (user.role === 'ADMIN') {
+      adminConfigData = await AdminConfig.findOne({
+        where: {
+          counsellor_id: user.counsellor_id
+        }
+      })
+      if (!adminConfigData) {
+        return res.status(401).send({ message: 'Unauthorized : No config for this admin.' })
+      }
+
+    }
+        const accessToken = adminConfigData.whatsapp_token; // WhatsApp API token
+        const businessId = adminConfigData.business_id; // WhatsApp Business Account ID
 
         // API request to fetch all message templates
         const response = await axios.get(
@@ -344,8 +509,63 @@ const checkTemplateStatus = async (req, res) => {
 const registerPhoneNumber = async (req, res) => {
   try {
     const { pin } = req.body; // Expecting the PIN in the request body
-    const accessToken = process.env.WHATSAPP_TOKEN; // WhatsApp API token
-    const businessPhoneNumberId = process.env.PHONE_NUMBER_ID; // WhatsApp Business Phone Number ID
+    const userId = req.counsellor_id;
+    console.log("requested user :: ", userId)
+
+    let adminConfigData;
+    const user = await Counsellor.findByPk(userId);
+
+    if (!user) {
+      return res.status(404).send({ message: "user not found" });
+    }
+
+
+
+    if (user.role === 'COUNSELLOR') {
+      console.log("user role ::: ", user.role)
+
+      console.log("user found :: ", user.assigned_by)
+      if (!user.assigned_by) {
+        return res.status(403).send({ message: "Access Forbidden. No Admin found for this counsellor" })
+      }
+      const counsellorAdmin = await Counsellor.findOne(
+        {
+          where: {
+            assigned_by: user.assigned_by,
+          }
+        }
+      )
+
+
+      console.log("counsellorAdmin found =======", counsellorAdmin)
+
+
+      adminConfigData = await AdminConfig.findOne({
+        where: {
+          counsellor_id: counsellorAdmin.assigned_by
+        }
+      })
+
+      if (!adminConfigData) {
+        return res.status(401).send({ message: 'Unauthorized : No config for the asssigned admin.' })
+      }
+
+      console.log("amdin config data :: ", adminConfigData)
+    }
+
+    if (user.role === 'ADMIN') {
+      adminConfigData = await AdminConfig.findOne({
+        where: {
+          counsellor_id: user.counsellor_id
+        }
+      })
+      if (!adminConfigData) {
+        return res.status(401).send({ message: 'Unauthorized : No config for this admin.' })
+      }
+
+    }
+    const accessToken = adminConfigData.whatsapp_token; // WhatsApp API token
+    const businessPhoneNumberId = adminConfigData.phone_number_id; // WhatsApp Business Phone Number ID
 
     const url = `https://graph.facebook.com/v21.0/${businessPhoneNumberId}/register`;
 
@@ -446,8 +666,6 @@ const sendMediaTemplateMessage = async (req, res) => {
         } = req.body; // Destructure necessary data from the request body
 
         // const accessToken = process.env.WHATSAPP_TOKEN; // WhatsApp API token
-        // const phoneNumberId = process.env.PHONE_NUMBER_ID; // WhatsApp Business Phone Number ID
-        // const accessToken = process.env.WHATSAPP_TOKEN; // WhatsApp API token
         const accessToken = adminConfigData.whatsapp_token; // WhatsApp API token
         // const phoneNumberId = process.env.PHONE_NUMBER_ID; // WhatsApp Business Phone Number ID
         const phoneNumberId = adminConfigData.phone_number_id; // WhatsApp Business Phone Number ID
@@ -543,9 +761,64 @@ const sendMediaTemplateWithButton = async (req, res) => {
             userName = "there", // Default to "there" if no userName is provided
             websiteLink = "https://lara.co.in",
         } = req.body; // Destructure necessary data from the request body
+    console.log(templateName,"--------------templatename")
+        const userId = req.counsellor_id;
+    console.log("requested user :: ", userId)
 
-        const accessToken = process.env.WHATSAPP_TOKEN; // WhatsApp API token
-        const phoneNumberId = process.env.PHONE_NUMBER_ID; // WhatsApp Business Phone Number ID
+    let adminConfigData;
+    const user = await Counsellor.findByPk(userId);
+
+    if (!user) {
+      return res.status(404).send({ message: "user not found" });
+    }
+
+
+
+    if (user.role === 'COUNSELLOR') {
+      console.log("user role ::: ", user.role)
+
+      console.log("user found :: ", user.assigned_by)
+      if (!user.assigned_by) {
+        return res.status(403).send({ message: "Access Forbidden. No Admin found for this counsellor" })
+      }
+      const counsellorAdmin = await Counsellor.findOne(
+        {
+          where: {
+            assigned_by: user.assigned_by,
+          }
+        }
+      )
+
+
+      console.log("counsellorAdmin found =======", counsellorAdmin)
+
+
+      adminConfigData = await AdminConfig.findOne({
+        where: {
+          counsellor_id: counsellorAdmin.assigned_by
+        }
+      })
+
+      if (!adminConfigData) {
+        return res.status(401).send({ message: 'Unauthorized : No config for the asssigned admin.' })
+      }
+
+      console.log("amdin config data :: ", adminConfigData)
+    }
+
+    if (user.role === 'ADMIN') {
+      adminConfigData = await AdminConfig.findOne({
+        where: {
+          counsellor_id: user.counsellor_id
+        }
+      })
+      if (!adminConfigData) {
+        return res.status(401).send({ message: 'Unauthorized : No config for this admin.' })
+      }
+
+    }
+        const accessToken = adminConfigData.whatsapp_token; // WhatsApp API token
+        const phoneNumberId = adminConfigData.phone_number_id; // WhatsApp Business Phone Number ID
 
         // Construct the payload
         const payload = {
@@ -631,52 +904,152 @@ const sendMediaTemplateWithButton = async (req, res) => {
     }
 };
 
-const sendLaraJan2025BatchTemplate = async (req, res) => {
-    const userId = req.counsellor_id;
-    let adminConfigData;
-    const user = await Counsellor.findByPk(userId);
+// const sendLaraJan2025BatchTemplate = async (req, res) => {
+//     const userId = req.counsellor_id;
+//     let adminConfigData;
+//     const user = await Counsellor.findByPk(userId);
 
-    if(!user){
-        return res.status(404).send({message:"user not found"});
-    }
+//     if(!user){
+//         return res.status(404).send({message:"user not found"});
+//     }
 
-    if(user.role === 'COUNSELLOR'){
-        const counsellorAdmin = await Counsellor.findOne(
-            {
-                where : {
-                    assigned_by: user.assigned_by
-                }
-            }
-        )
+//     if(user.role === 'COUNSELLOR'){
+//         const counsellorAdmin = await Counsellor.findOne(
+//             {
+//                 where : {
+//                     assigned_by: user.assigned_by
+//                 }
+//             }
+//         )
 
-        if(!counsellorAdmin){
-            return res.status(403).send({message : "Access Forbidden. No Admin found for this counsellor"})
-        }
+//         if(!counsellorAdmin){
+//             return res.status(403).send({message : "Access Forbidden. No Admin found for this counsellor"})
+//         }
 
-        adminConfigData = await AdminConfig.findOne({
-            where: {
-                counsellor_id : counsellorAdmin.assigned_by
-            }
-        })
+//         adminConfigData = await AdminConfig.findOne({
+//             where: {
+//                 counsellor_id : counsellorAdmin.assigned_by
+//             }
+//         })
 
-        if(!adminConfigData){
-            return res.status(401).send({message : 'Unauthorized : No config for the asssigned admin.'})
-        }
+//         if(!adminConfigData){
+//             return res.status(401).send({message : 'Unauthorized : No config for the asssigned admin.'})
+//         }
 
-        console.log("amdin config data :: ", adminConfigData)
-    }
+//         // console.log("amdin config data :: ", adminConfigData)
+//     }
 
-    if(user.role === 'ADMIN'){
-        adminConfigData = await AdminConfig.findOne({
-            where: {
-                counsellor_id : user.counsellor_id
-            }
-        })
-        if(!adminConfigData){
-            return res.status(401).send({message : 'Unauthorized : No config for this admin.'})
-        }
+//     if(user.role === 'ADMIN'){
+//         adminConfigData = await AdminConfig.findOne({
+//             where: {
+//                 counsellor_id : user.counsellor_id
+//             }
+//         })
+//         if(!adminConfigData){
+//             return res.status(401).send({message : 'Unauthorized : No config for this admin.'})
+//         }
         
-    }
+//     }
+//     try {
+//         const {
+//             to,
+//             templateName,
+//             languageCode,
+//             imageUrl,
+//         } = req.body; // Destructure necessary data from the request body
+
+//         // const accessToken = process.env.WHATSAPP_TOKEN; // WhatsApp API token
+//         // const phoneNumberId = process.env.PHONE_NUMBER_ID; // WhatsApp Business Phone Number ID
+
+//         const accessToken = adminConfigData.whatsapp_token; // WhatsApp API token
+//         const phoneNumberId = adminConfigData.phone_number_id; // WhatsApp Business Phone Number ID
+
+//         // Construct the payload
+//         const payload = {
+//             messaging_product: "whatsapp",
+//             recipient_type: "individual",
+//             to,
+//             type: "template",
+//             template: {
+//                 name: templateName,
+//                 language: {
+//                     code: languageCode,
+//                 },
+//                 components: [
+//                     {
+//                         type: "header",
+//                         parameters: [
+//                             {
+//                                 type: "image",
+//                                 image: {
+//                                     link: imageUrl,
+//                                 },
+//                             },
+//                         ],
+//                     },
+//                     {
+//                         type: "body",
+//                         // parameters: [
+//                         //     {
+//                         //         type: "text",
+//                         //         text: `Hello ${userName}!`,
+//                         //     },
+//                         //     {
+//                         //         type: "text",
+//                         //         text: websiteLink,
+//                         //     },
+//                         // ],
+//                     },
+//                     // {
+//                     //     type: "button",
+//                     //     sub_type: "url",
+//                     //     index: "0",
+//                     //     parameters: [
+//                     //         {
+//                     //             type: "text",
+//                     //             text: websiteLink,
+//                     //         },
+//                     //     ],
+//                     // },
+//                 ],
+//             },
+//         };
+
+//         // Make the POST request
+//         const response = await axios.post(
+//             `https://graph.facebook.com/v21.0/${phoneNumberId}/messages`,
+//             payload,
+//             {
+//                 headers: {
+//                     Authorization: `Bearer ${accessToken}`,
+//                     "Content-Type": "application/json",
+//                 },
+//             }
+//         );
+
+//         // Return a success response
+//         return res.status(200).json({
+//             success: true,
+//             message: "Media template message with button sent successfully.",
+//             response: response.data,
+//         });
+//     } catch (error) {
+//         console.error(
+//             "Error sending media template message with button:",
+//             error.response ? error.response.data : error.message
+//         );
+
+//         // Handle errors and send appropriate response
+//         return res.status(500).json({
+//             success: false,
+//             message: "Failed to send media template message with button.",
+//             error: error.response?.data || error.message,
+//         });
+//     }
+// };
+
+
+const sendFreeSessionTemplate = async (req, res) => {
     try {
         const {
             to,
@@ -684,10 +1057,61 @@ const sendLaraJan2025BatchTemplate = async (req, res) => {
             languageCode,
             imageUrl,
         } = req.body; // Destructure necessary data from the request body
+    const userId = req.counsellor_id;
+    console.log("requested user :: ", userId)
 
-        // const accessToken = process.env.WHATSAPP_TOKEN; // WhatsApp API token
-        // const phoneNumberId = process.env.PHONE_NUMBER_ID; // WhatsApp Business Phone Number ID
+    let adminConfigData;
+    const user = await Counsellor.findByPk(userId);
 
+    if (!user) {
+      return res.status(404).send({ message: "user not found" });
+    }
+
+
+
+    if (user.role === 'COUNSELLOR') {
+      console.log("user role ::: ", user.role)
+
+      console.log("user found :: ", user.assigned_by)
+      if (!user.assigned_by) {
+        return res.status(403).send({ message: "Access Forbidden. No Admin found for this counsellor" })
+      }
+      const counsellorAdmin = await Counsellor.findOne(
+        {
+          where: {
+            assigned_by: user.assigned_by,
+          }
+        }
+      )
+
+
+      console.log("counsellorAdmin found =======", counsellorAdmin)
+
+
+      adminConfigData = await AdminConfig.findOne({
+        where: {
+          counsellor_id: counsellorAdmin.assigned_by
+        }
+      })
+
+      if (!adminConfigData) {
+        return res.status(401).send({ message: 'Unauthorized : No config for the asssigned admin.' })
+      }
+
+      console.log("amdin config data :: ", adminConfigData)
+    }
+
+    if (user.role === 'ADMIN') {
+      adminConfigData = await AdminConfig.findOne({
+        where: {
+          counsellor_id: user.counsellor_id
+        }
+      })
+      if (!adminConfigData) {
+        return res.status(401).send({ message: 'Unauthorized : No config for this admin.' })
+      }
+
+    }
         const accessToken = adminConfigData.whatsapp_token; // WhatsApp API token
         const phoneNumberId = adminConfigData.phone_number_id; // WhatsApp Business Phone Number ID
 
@@ -776,199 +1200,179 @@ const sendLaraJan2025BatchTemplate = async (req, res) => {
 };
 
 
-const sendFreeSessionTemplate = async (req, res) => {
-    try {
-        const {
-            to,
-            templateName,
-            languageCode,
-            imageUrl,
-        } = req.body; // Destructure necessary data from the request body
+const sendMediaTemplate = async (req, res) => {
+  try {
+      const { 
+          to, 
+          templateName, 
+          languageCode, 
+          mediaUrl, 
+          userName, 
+          websiteLink, 
+          textBody, 
+          currencyCode, 
+          amount, 
+          fallbackDate, 
+          parameterCount 
+      } = req.body;
 
-        const accessToken = process.env.WHATSAPP_TOKEN; // WhatsApp API token
-        const phoneNumberId = process.env.PHONE_NUMBER_ID; // WhatsApp Business Phone Number ID
+      console.log(req.body, "---------------------------------------");
 
-        // Construct the payload
-        const payload = {
-            messaging_product: "whatsapp",
-            recipient_type: "individual",
-            to,
-            type: "template",
-            template: {
-                name: templateName,
-                language: {
-                    code: languageCode,
-                },
-                components: [
-                    {
-                        type: "header",
-                        parameters: [
-                            {
-                                type: "image",
-                                image: {
-                                    link: imageUrl,
-                                },
-                            },
-                        ],
-                    },
-                    {
-                        type: "body",
-                        // parameters: [
-                        //     {
-                        //         type: "text",
-                        //         text: `Hello ${userName}!`,
-                        //     },
-                        //     {
-                        //         type: "text",
-                        //         text: websiteLink,
-                        //     },
-                        // ],
-                    },
-                    // {
-                    //     type: "button",
-                    //     sub_type: "url",
-                    //     index: "0",
-                    //     parameters: [
-                    //         {
-                    //             type: "text",
-                    //             text: websiteLink,
-                    //         },
-                    //     ],
-                    // },
-                ],
-            },
-        };
+      const userId = req.counsellor_id;
+      let adminConfigData;
+      const user = await Counsellor.findByPk(userId);
 
-        // Make the POST request
-        const response = await axios.post(
-            `https://graph.facebook.com/v21.0/${phoneNumberId}/messages`,
-            payload,
-            {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                    "Content-Type": "application/json",
-                },
-            }
-        );
+      if (!user) {
+          return res.status(404).send({ message: "User not found" });
+      }
 
-        // Return a success response
-        return res.status(200).json({
-            success: true,
-            message: "Media template message with button sent successfully.",
-            response: response.data,
-        });
-    } catch (error) {
-        console.error(
-            "Error sending media template message with button:",
-            error.response ? error.response.data : error.message
-        );
+      // Check user role and fetch the corresponding admin config data
+      if (user.role === 'COUNSELLOR') {
+          const counsellorAdmin = await Counsellor.findOne({
+              where: { assigned_by: user.assigned_by },
+          });
 
-        // Handle errors and send appropriate response
-        return res.status(500).json({
-            success: false,
-            message: "Failed to send media template message with button.",
-            error: error.response?.data || error.message,
-        });
-    }
+          if (!counsellorAdmin) {
+              return res.status(403).send({ message: "Access Forbidden. No Admin found for this counsellor" });
+          }
+
+          adminConfigData = await AdminConfig.findOne({
+              where: { counsellor_id: counsellorAdmin.assigned_by },
+          });
+
+          if (!adminConfigData) {
+              return res.status(401).send({ message: 'Unauthorized: No config for the assigned admin.' });
+          }
+      }
+
+      if (user.role === 'ADMIN') {
+          adminConfigData = await AdminConfig.findOne({
+              where: { counsellor_id: user.counsellor_id },
+          });
+
+          if (!adminConfigData) {
+              return res.status(401).send({ message: 'Unauthorized: No config for this admin.' });
+          }
+      }
+
+      const accessToken = adminConfigData.whatsapp_token; // WhatsApp API token
+      const phoneNumberId = adminConfigData.phone_number_id; // WhatsApp Business Phone Number ID
+
+      // Determine the media type (either image or video) based on the mediaUrl
+      const isVideo = /\.(mp4|webm|ogg|avi|mov|mkv)$/i.test(mediaUrl);
+      const isImage = /\.(png|jpe?g|gif|bmp|webp)$/i.test(mediaUrl);
+
+      if (!isVideo && !isImage && mediaUrl) {
+          return res.status(400).send({ message: "Invalid media type. Must be an image or video." });
+      }
+
+      const payload = {
+          messaging_product: "whatsapp",
+          recipient_type: "individual",
+          to,
+          type: "template",
+          template: {
+              name: templateName,
+              language: {
+                  code: languageCode,
+              },
+              components: [],
+          },
+      };
+
+      // Add header with media (Image or Video)
+      if (isImage && mediaUrl) {
+          // Ensure the header format is correctly defined as IMAGE
+          payload.template.components.push({
+              type: "header",
+              parameters: [
+                  { type: "image", image: { link: mediaUrl } },
+              ],
+          });
+      }
+
+      if (isVideo && mediaUrl) {
+          // Ensure the header format is correctly defined as VIDEO
+          payload.template.components.push({
+              type: "header",
+              parameters: [
+                  { type: "video", video: { link: mediaUrl } },
+              ],
+          });
+      }
+
+      // Add dynamic body parameters based on parameterCount
+      const bodyParams = [];
+
+      if (parameterCount > 0) {
+          if (parameterCount >= 1) {
+              bodyParams.push({ type: "text", text: `Hello ${userName}!` });
+          }
+
+          if (parameterCount >= 2) {
+              bodyParams.push({ type: "text", text: websiteLink });
+          }
+
+          if (parameterCount >= 3 && textBody) {
+              bodyParams.push({ type: "text", text: textBody });
+          }
+
+          if (parameterCount >= 4 && currencyCode && amount) {
+              bodyParams.push({
+                  type: "currency",
+                  currency: {
+                      fallback_value: `${currencyCode} ${amount / 1000}`,
+                      code: currencyCode,
+                      amount_1000: amount,
+                  },
+              });
+          }
+
+          if (parameterCount >= 5 && fallbackDate) {
+              bodyParams.push({
+                  type: "date_time",
+                  date_time: {
+                      fallback_value: fallbackDate,
+                  },
+              });
+          }
+      }
+
+      // Add body parameters to template
+      payload.template.components.push({
+          type: "body",
+          parameters: bodyParams,
+      });
+
+      // Send the message to WhatsApp API
+      const response = await axios.post(
+          `https://graph.facebook.com/v21.0/${phoneNumberId}/messages`,
+          payload,
+          {
+              headers: {
+                  Authorization: `Bearer ${accessToken}`,
+                  "Content-Type": "application/json",
+              },
+          }
+      );
+
+      // Return a success response
+      return res.status(200).json({
+          success: true,
+          message: `Media template message sent successfully.`,
+          response: response.data,
+      });
+  } catch (error) {
+      console.error("Error sending media template message:", error.response ? error.response.data : error.message);
+
+      // Handle errors and send appropriate response
+      return res.status(500).json({
+          success: false,
+          message: "Failed to send media template message.",
+          error: error.response?.data || error.message,
+      });
+  }
 };
-
-const sendVideoTemplate = async (req, res) => {
-    try {
-        const {
-            to,
-            templateName,
-            languageCode,
-            videoUrl,
-        } = req.body; // Destructure necessary data from the request body
-
-        const accessToken = process.env.WHATSAPP_TOKEN; // WhatsApp API token
-        const phoneNumberId = process.env.PHONE_NUMBER_ID; // WhatsApp Business Phone Number ID
-
-        // Construct the payload
-        const payload = {
-            messaging_product: "whatsapp",
-            recipient_type: "individual",
-            to,
-            type: "template",
-            template: {
-                name: templateName,
-                language: {
-                    code: languageCode,
-                },
-                components: [
-                    {
-                        type: "header",
-                        parameters: [
-                            {
-                                type: "video",
-                                video: {
-                                    link: videoUrl,
-                                },
-                            },
-                        ],
-                    },
-                    {
-                        type: "body",
-                        // parameters: [
-                        //     {
-                        //         type: "text",
-                        //         text: `Hello ${userName}!`,
-                        //     },
-                        //     {
-                        //         type: "text",
-                        //         text: websiteLink,
-                        //     },
-                        // ],
-                    },
-                    // {
-                    //     type: "button",
-                    //     sub_type: "url",
-                    //     index: "0",
-                    //     parameters: [
-                    //         {
-                    //             type: "text",
-                    //             text: websiteLink,
-                    //         },
-                    //     ],
-                    // },
-                ],
-            },
-        };
-
-        // Make the POST request
-        const response = await axios.post(
-            `https://graph.facebook.com/v21.0/${phoneNumberId}/messages`,
-            payload,
-            {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                    "Content-Type": "application/json",
-                },
-            }
-        );
-
-        // Return a success response
-        return res.status(200).json({
-            success: true,
-            message: "Media template message with video sent successfully.",
-            response: response.data,
-        });
-    } catch (error) {
-        console.error(
-            "Error sending media template message with video:",
-            error.response ? error.response.data : error.message
-        );
-
-        // Handle errors and send appropriate response
-        return res.status(500).json({
-            success: false,
-            message: "Failed to send media template message with video.",
-            error: error.response?.data || error.message,
-        });
-    }
-};
-
-
 
 const uploadTemplateImage = async (req, res, next) => {
     const counsellor_id = req.counsellor_id;
@@ -983,8 +1387,63 @@ const uploadTemplateImage = async (req, res, next) => {
     }
 
     try {
+        const userId = req.counsellor_id;
+    console.log("requested user :: ", userId)
+
+    let adminConfigData;
+    const user = await Counsellor.findByPk(userId);
+
+    if (!user) {
+      return res.status(404).send({ message: "user not found" });
+    }
+
+
+
+    if (user.role === 'COUNSELLOR') {
+      console.log("user role ::: ", user.role)
+
+      console.log("user found :: ", user.assigned_by)
+      if (!user.assigned_by) {
+        return res.status(403).send({ message: "Access Forbidden. No Admin found for this counsellor" })
+      }
+      const counsellorAdmin = await Counsellor.findOne(
+        {
+          where: {
+            assigned_by: user.assigned_by,
+          }
+        }
+      )
+
+
+      console.log("counsellorAdmin found =======", counsellorAdmin)
+
+
+      adminConfigData = await AdminConfig.findOne({
+        where: {
+          counsellor_id: counsellorAdmin.assigned_by
+        }
+      })
+
+      if (!adminConfigData) {
+        return res.status(401).send({ message: 'Unauthorized : No config for the asssigned admin.' })
+      }
+
+      console.log("amdin config data :: ", adminConfigData)
+    }
+
+    if (user.role === 'ADMIN') {
+      adminConfigData = await AdminConfig.findOne({
+        where: {
+          counsellor_id: user.counsellor_id
+        }
+      })
+      if (!adminConfigData) {
+        return res.status(401).send({ message: 'Unauthorized : No config for this admin.' })
+      }
+
+    }
         // Generate S3 file key
-        const clientName = process.env.CLIENT_NAME || 'default_client';
+        const clientName = adminConfigData.client_name || 'default_client';
         const fileKey = `${clientName}/template_images/${uuidv4()}_${req.file.originalname.replace(/\s+/g, '')}`;
 
         // Upload file to S3
@@ -1031,8 +1490,63 @@ const uploadTemplateVideo = async (req, res, next) => {
     }
 
     try {
+        const userId = req.counsellor_id;
+    console.log("requested user :: ", userId)
+
+    let adminConfigData;
+    const user = await Counsellor.findByPk(userId);
+
+    if (!user) {
+      return res.status(404).send({ message: "user not found" });
+    }
+
+
+
+    if (user.role === 'COUNSELLOR') {
+      console.log("user role ::: ", user.role)
+
+      console.log("user found :: ", user.assigned_by)
+      if (!user.assigned_by) {
+        return res.status(403).send({ message: "Access Forbidden. No Admin found for this counsellor" })
+      }
+      const counsellorAdmin = await Counsellor.findOne(
+        {
+          where: {
+            assigned_by: user.assigned_by,
+          }
+        }
+      )
+
+
+      console.log("counsellorAdmin found =======", counsellorAdmin)
+
+
+      adminConfigData = await AdminConfig.findOne({
+        where: {
+          counsellor_id: counsellorAdmin.assigned_by
+        }
+      })
+
+      if (!adminConfigData) {
+        return res.status(401).send({ message: 'Unauthorized : No config for the asssigned admin.' })
+      }
+
+      console.log("amdin config data :: ", adminConfigData)
+    }
+
+    if (user.role === 'ADMIN') {
+      adminConfigData = await AdminConfig.findOne({
+        where: {
+          counsellor_id: user.counsellor_id
+        }
+      })
+      if (!adminConfigData) {
+        return res.status(401).send({ message: 'Unauthorized : No config for this admin.' })
+      }
+
+    }
         // Generate file key for DigitalOcean Spaces
-        const clientName = process.env.CLIENT_NAME || 'default_client';
+        const clientName = adminConfigData.client_name || 'default_client';
         const fileKey = `${clientName}/template_videos/${uuidv4()}_${req.file.originalname.replace(/\s+/g, '')}`;
 
         // Upload video to DigitalOcean Spaces
@@ -1086,8 +1600,64 @@ const uploadTemplateMedia = async (req, res, next) => {
         if (!isImage && !isVideo) {
             return res.status(400).json({ message: 'Unsupported file type. Only images and videos are allowed.' });
         }
+         
+        const userId = req.counsellor_id;
+    console.log("requested user :: ", userId)
 
-        const clientName = process.env.CLIENT_NAME || 'default_client';
+    let adminConfigData;
+    const user = await Counsellor.findByPk(userId);
+
+    if (!user) {
+      return res.status(404).send({ message: "user not found" });
+    }
+
+
+
+    if (user.role === 'COUNSELLOR') {
+      console.log("user role ::: ", user.role)
+
+      console.log("user found :: ", user.assigned_by)
+      if (!user.assigned_by) {
+        return res.status(403).send({ message: "Access Forbidden. No Admin found for this counsellor" })
+      }
+      const counsellorAdmin = await Counsellor.findOne(
+        {
+          where: {
+            assigned_by: user.assigned_by,
+          }
+        }
+      )
+
+
+      console.log("counsellorAdmin found =======", counsellorAdmin)
+
+
+      adminConfigData = await AdminConfig.findOne({
+        where: {
+          counsellor_id: counsellorAdmin.assigned_by
+        }
+      })
+
+      if (!adminConfigData) {
+        return res.status(401).send({ message: 'Unauthorized : No config for the asssigned admin.' })
+      }
+
+      console.log("amdin config data :: ", adminConfigData)
+    }
+
+    if (user.role === 'ADMIN') {
+      adminConfigData = await AdminConfig.findOne({
+        where: {
+          counsellor_id: user.counsellor_id
+        }
+      })
+      if (!adminConfigData) {
+        return res.status(401).send({ message: 'Unauthorized : No config for this admin.' })
+      }
+
+    }
+
+        const clientName = adminConfigData.client_name|| 'default_client';
         const folder = isImage ? 'template_images' : 'template_videos';
         const fileKey = `${clientName}/${folder}/${uuidv4()}_${req.file.originalname.replace(/\s+/g, '')}`;
 
@@ -1201,7 +1771,7 @@ module.exports = {
     createWhatsAppTemplate,
     checkTemplateStatus,
     uploadMediaToWhatsApp,
-    sendLaraJan2025BatchTemplate,
+    // sendLaraJan2025BatchTemplate,
     registerPhoneNumber,
     sendMediaTemplateMessage,
     sendMediaTemplateWithButton,
@@ -1211,5 +1781,6 @@ module.exports = {
     getAllTemplateImages,
     getTemplateImageById,
     getTemplateImagesByCounsellorId,
-    sendVideoTemplate
+    // sendVideoTemplate,
+    sendMediaTemplate
 };

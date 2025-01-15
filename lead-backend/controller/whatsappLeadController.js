@@ -4,6 +4,7 @@ const db = require('../models');
 
 const WhatsAppLead = db.WhatsAppLead;
 const Counsellor = db.Counsellor;
+const MessageStatus = db.MessageStatus; 
 
 const saveWhatsAppLeadData = async (req, res) => {
     try {
@@ -96,8 +97,59 @@ const getAllWhatsAppLeads = async (req, res) => {
     }
 };
 
+const getAllMessageStatuses = async (req, res) => {
+    try {
+        const { page = 1, limit = 10, status = "", recipient_id = "" } = req.query;
+
+        const pageNumber = parseInt(page, 10);
+        const limitNumber = parseInt(limit, 25);
+
+        if (isNaN(pageNumber) || isNaN(limitNumber) || pageNumber < 1 || limitNumber < 1) {
+            return res.status(400).json({
+                message: "Invalid page or limit value. Both should be positive integers.",
+            });
+        }
+
+        const offset = (pageNumber - 1) * limitNumber;
+
+        // Dynamic filter conditions
+        const conditions = {};
+        if (status) conditions.status = status;
+        if (recipient_id) conditions.recipient_id = recipient_id;
+
+        const { rows: messageStatuses, count: totalRecords } = await MessageStatus.findAndCountAll({
+            where: conditions,
+            order: [["timestamp", "DESC"]],
+            limit: limitNumber,
+            offset,
+            attributes: ["id", "recipient_id", "message_id", "status", "timestamp", "error_code", "error_title", "error_message", "error_details"],
+        });
+
+        const totalPages = Math.ceil(totalRecords / limitNumber);
+
+        return res.status(200).json({
+            message: "Message statuses retrieved successfully.",
+            data: messageStatuses,
+            pagination: {
+                totalRecords,
+                totalPages,
+                currentPage: pageNumber,
+                limit: limitNumber,
+            },
+        });
+    } catch (error) {
+        console.error("Error fetching message statuses:", error);
+        return res.status(500).json({
+            message: "Failed to fetch message status data.",
+            error: error.message,
+        });
+    }
+};
+
+
 
 module.exports = {
     saveWhatsAppLeadData,
     getAllWhatsAppLeads,
+    getAllMessageStatuses
 }

@@ -42,6 +42,7 @@ db.LeadMessageHistory = require('./leadMessageHistoryModel.js')(sequelize, DataT
 db.MessageStatus = require('./messageStatusModel.js')(sequelize, DataTypes);
 db.AdminConfig = require('./AdminConfigModel.js')(sequelize, DataTypes);
 
+db.MessageStatus = require('./messageStatusModel.js')(sequelize, DataTypes);
 
 // Define many-to-many association
 // Define associations in index.js or separate model files

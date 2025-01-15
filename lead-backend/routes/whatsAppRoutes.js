@@ -27,13 +27,14 @@ const upload = multer();
 
 
 // whatsAppRoutes.post('/create-template', whatsAppController.createWhatsAppTemplate);
-whatsAppRoutes.post('/create-template', whatsAppController.createWhatsAppTemplate);
-whatsAppRoutes.post('/upload-media', upload.single('image'), whatsAppController.uploadMediaToWhatsApp);
-whatsAppRoutes.post('/registerPhoneNumber', whatsAppController.registerPhoneNumber);
+whatsAppRoutes.post('/create-template',authenticateToken,whatsAppController.createWhatsAppTemplate);
+whatsAppRoutes.post('/upload-media', upload.single('image'),authenticateToken, whatsAppController.uploadMediaToWhatsApp);
+whatsAppRoutes.post('/registerPhoneNumber',authenticateToken, whatsAppController.registerPhoneNumber);
 whatsAppRoutes.post('/sendMediaTemplateMessage', authenticateToken, whatsAppController.sendMediaTemplateMessage);
-whatsAppRoutes.post('/sendMediaTemplateWithButton', whatsAppController.sendMediaTemplateWithButton);
-whatsAppRoutes.post('/sendLaraJan2025BatchTemplate', authenticateToken, whatsAppController.sendLaraJan2025BatchTemplate);
-whatsAppRoutes.post('/sendVideoTemplate', whatsAppController.sendVideoTemplate);
+whatsAppRoutes.post('/sendMediaTemplateWithButton',authenticateToken, whatsAppController.sendMediaTemplateWithButton);
+// whatsAppRoutes.post('/sendLaraJan2025BatchTemplate', authenticateToken, whatsAppController.sendLaraJan2025BatchTemplate);
+// whatsAppRoutes.post('/sendVideoTemplate',authenticateToken, whatsAppController.sendVideoTemplate);
+whatsAppRoutes.post('/sendMediaTemplate',authenticateToken, whatsAppController.sendMediaTemplate);
 whatsAppRoutes.post('/uploadTemplateImage', upload.single('image'), authenticateToken, whatsAppController.uploadTemplateImage);
 whatsAppRoutes.post('/uploadTemplateMedia', upload.single('file'), authenticateToken, whatsAppController.uploadTemplateMedia);
 
@@ -42,7 +43,7 @@ whatsAppRoutes.get('/getTemplateImageById/:id', whatsAppController.getTemplateIm
 whatsAppRoutes.get('/getTemplateImagesByCounsellorId', authenticateToken, whatsAppController.getTemplateImagesByCounsellorId);
 
 
-whatsAppRoutes.post("/uploadMediaToWhatsApp", upload.single("file"), async (req, res) => {
+whatsAppRoutes.post("/uploadMediaToWhatsApp",authenticateToken ,upload.single("file"), async (req, res) => {
   try {
     const { file } = req;
     if (!file) return res.status(400).json({ error: "No file uploaded" });
@@ -51,13 +52,67 @@ whatsAppRoutes.post("/uploadMediaToWhatsApp", upload.single("file"), async (req,
     formData.append("file", file.buffer, file.originalname); // Add the file
     formData.append("type", file.mimetype); // Specify MIME type
     formData.append("messaging_product", "whatsapp"); // Add messaging_product parameter
+    const userId = req.counsellor_id;
+    // console.log("requested user :: ", userId)
 
+    let adminConfigData;
+    const user = await Counsellor.findByPk(userId);
+
+    if (!user) {
+      return res.status(404).send({ message: "user not found" });
+    }
+
+
+
+    if (user.role === 'COUNSELLOR') {
+      // console.log("user role ::: ", user.role)
+
+      console.log("user found :: ", user.assigned_by)
+      if (!user.assigned_by) {
+        return res.status(403).send({ message: "Access Forbidden. No Admin found for this counsellor" })
+      }
+      const counsellorAdmin = await Counsellor.findOne(
+        {
+          where: {
+            assigned_by: user.assigned_by,
+          }
+        }
+      )
+
+
+      console.log("counsellorAdmin found =======", counsellorAdmin)
+
+
+      adminConfigData = await AdminConfig.findOne({
+        where: {
+          counsellor_id: counsellorAdmin.assigned_by
+        }
+      })
+
+      if (!adminConfigData) {
+        return res.status(401).send({ message: 'Unauthorized : No config for the asssigned admin.' })
+      }
+
+      console.log("amdin config data :: ", adminConfigData)
+    }
+
+    if (user.role === 'ADMIN') {
+      adminConfigData = await AdminConfig.findOne({
+        where: {
+          counsellor_id: user.counsellor_id
+        }
+      })
+      if (!adminConfigData) {
+        return res.status(401).send({ message: 'Unauthorized : No config for this admin.' })
+      }
+
+    }
     const response = await axios.post(
-      `https://graph.facebook.com/v21.0/${process.env.PHONE_NUMBER_ID}/media`,
+      `https://graph.facebook.com/v21.0/${adminConfigData.phone_number_id}/media`,
       formData,
       {
         headers: {
-          Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}`,
+          Authorization: `Bearer ${adminConfigData.whatsapp_token}`,
           ...formData.getHeaders(),
         },
       }
@@ -70,7 +125,7 @@ whatsAppRoutes.post("/uploadMediaToWhatsApp", upload.single("file"), async (req,
   }
 });
 
-whatsAppRoutes.post("/createWhatsAppTemplate", async (req, res) => {
+whatsAppRoutes.post("/createWhatsAppTemplate",authenticateToken, async (req, res) => {
   try {
     const { templateName, language, bodyText, mediaId } = req.body;
 
@@ -109,13 +164,67 @@ whatsAppRoutes.post("/createWhatsAppTemplate", async (req, res) => {
         ],
       },
     };
+    const userId = req.counsellor_id;
+    console.log("requested user :: ", userId)
 
+    let adminConfigData;
+    const user = await Counsellor.findByPk(userId);
+
+    if (!user) {
+      return res.status(404).send({ message: "user not found" });
+    }
+
+
+
+    if (user.role === 'COUNSELLOR') {
+      console.log("user role ::: ", user.role)
+
+      console.log("user found :: ", user.assigned_by)
+      if (!user.assigned_by) {
+        return res.status(403).send({ message: "Access Forbidden. No Admin found for this counsellor" })
+      }
+      const counsellorAdmin = await Counsellor.findOne(
+        {
+          where: {
+            assigned_by: user.assigned_by,
+          }
+        }
+      )
+
+
+      console.log("counsellorAdmin found =======", counsellorAdmin)
+
+
+      adminConfigData = await AdminConfig.findOne({
+        where: {
+          counsellor_id: counsellorAdmin.assigned_by
+        }
+      })
+
+      if (!adminConfigData) {
+        return res.status(401).send({ message: 'Unauthorized : No config for the asssigned admin.' })
+      }
+
+      console.log("amdin config data :: ", adminConfigData)
+    }
+
+    if (user.role === 'ADMIN') {
+      adminConfigData = await AdminConfig.findOne({
+        where: {
+          counsellor_id: user.counsellor_id
+        }
+      })
+      if (!adminConfigData) {
+        return res.status(401).send({ message: 'Unauthorized : No config for this admin.' })
+      }
+
+    }
     const response = await axios.post(
-      `https://graph.facebook.com/v16.0/${process.env.PHONE_NUMBER_ID}/messages`,
+      `https://graph.facebook.com/v16.0/${adminConfigData.phone_number_id}/messages`,
       payload,
       {
         headers: {
-          Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}`,
+          Authorization: `Bearer ${adminConfigData.whatsapp_token}`,
           "Content-Type": "application/json",
         },
       }

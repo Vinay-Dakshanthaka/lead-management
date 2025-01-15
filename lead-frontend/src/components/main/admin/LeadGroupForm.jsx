@@ -55,7 +55,7 @@ const CreateLeadGroup = () => {
                 description,
                 lead_ids: leadIds,
             };
-
+console.log("payload :", payload)
             const token = localStorage.getItem("token");
             const config = {
                 headers: {
@@ -68,6 +68,7 @@ const CreateLeadGroup = () => {
             setDescription("");
             setLeadIds([]);
         } catch (error) {
+            console.log(error,"-------------leadgroupform")
             const errorMessage =
                 error.response?.data?.message || "Failed to create lead group.";
             toast.error(errorMessage);
