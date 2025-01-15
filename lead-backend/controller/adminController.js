@@ -87,7 +87,6 @@ const getAllAdmin = async (req, res) => {
 const getAllLeadsForCounsellor = async (req, res) => {
     try {
         const { counsellor_id } = req.body;
-
         // Fetch the counsellor details from the Counsellor table
         const counsellor = await Counsellor.findByPk(counsellor_id, {
             attributes: ['counsellor_id', 'name', 'email', 'phone'] // Add other relevant counsellor fields if needed
@@ -136,7 +135,6 @@ const getAllLeadsForCounsellor = async (req, res) => {
             lead_phone: entry.Lead.phone, // From Lead table
             lead_joining_status: entry.Lead.joining_status // From Lead table
         }));
-
         // Return the counsellor details along with the list of leads
         return res.status(200).send({
             message: "Leads and counsellor details retrieved successfully",
@@ -148,6 +146,7 @@ const getAllLeadsForCounsellor = async (req, res) => {
             },
             leads: leadsData
         });
+
     } catch (error) {
         console.error("Error retrieving leads and counsellor details:", error);
         return res.status(500).send({ message: "Failed to retrieve leads and counsellor details", error });
@@ -212,7 +211,7 @@ const getAllLeadsForCounsellor = async (req, res) => {
 // };
 
 const getAllLeadsAndCounsellors = async (req, res) => {
-    const userId = req.counsellor_id;
+       const userId = req.counsellor_id; 
     try {
         // Fetch all leads along with their associated counsellors and LeadCounsellor data
         const leads = await Lead.findAll({
@@ -261,7 +260,7 @@ const getAllLeadsAndCounsellors = async (req, res) => {
                 responsible_for_joining: counsellor.LeadCounsellor.responsible_for_joining // Add responsible_for_joining
             }))
         }));
-
+         console.log(leadsData,"-------------------leadsdata")
         // Return the leads and associated counsellors
         return res.status(200).send({
             message: "Leads and counsellor details retrieved successfully",

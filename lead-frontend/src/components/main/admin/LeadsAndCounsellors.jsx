@@ -138,8 +138,8 @@ const LeadsAndCounsellors = () => {
             Authorization: `Bearer ${token}`,
           },
         };
-
         const response = await axios.get(`${baseURL}/api/admin/getAllLeadsAndCounsellors`, config);
+        console.log(response.data,"-----------------")
         setLeads(response.data.leads);
         setFilteredLeads(response.data.leads);
       } catch (error) {

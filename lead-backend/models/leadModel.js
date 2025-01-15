@@ -49,7 +49,7 @@ module.exports = (sequelize, DataTypes) => {
         phone: {
             type: DataTypes.STRING,
             allowNull: true,
-            unique: true // Unique constraint for phone
+            // unique: true // Unique constraint for phone
         },
         joining_status: {
             type: DataTypes.BOOLEAN,
@@ -80,3 +80,5 @@ module.exports = (sequelize, DataTypes) => {
 // FOREIGN KEY (`counsellor_id`) REFERENCES `lead_management`.`Counsellors`(`counsellor_id`)
 // ON UPDATE CASCADE
 // ON DELETE SET NULL;
+// to remove the uniqueconstraint
+// ALTER TABLE lead_management.leads DROP INDEX phone_2;  

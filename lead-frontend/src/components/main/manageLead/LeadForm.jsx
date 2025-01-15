@@ -50,18 +50,24 @@ const LeadForm = () => {
         }));
     };
 
+    const token = localStorage.getItem('token');
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
     const handleSubmit = (e) => {
         e.preventDefault();
         const postData = {
             ...leadData,
             lead_id: lead_id ? lead_id : undefined
         };
-
+       console.log(postData,"---------postdata")
         const endpoint = lead_id
             ? `${baseURL}/api/lead/update-lead-data/${lead_id}`
             : `${baseURL}/api/lead/save-lead-data`;
 
-        axios.post(endpoint, postData)
+        axios.post(endpoint, postData,config)
             .then(response => {
                 toast.success('Lead data saved successfully!');
                 // navigate('/overview'); 

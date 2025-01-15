@@ -88,17 +88,20 @@ const isToday = (date) => moment(date).isSame(moment(), 'day');
 const saveLeadData = async (req, res) => {
     try {
         const userId = req.counsellor_id;
-        
+        console.log(userId,"-----------savedata")
         const { name, email, phone, counsellor_id } = req.body;
 
         // Check if the lead with the same phone already exists
         let lead = await Lead.findOne({
-            where: { phone }
+            where: { 
+                phone : phone,
+                counsellor_id : counsellor_id,
+             }
         });
 
         // If a lead with the same phone already exists, return an error
         if (lead) {
-            return res.status(409).send({ message: "Lead with this phone number already exists" });
+            return res.status(409).send({ message: "Lead with this counsellor  already exists" });
         }
 
         // If lead doesn't exist, create a new lead
@@ -750,40 +753,51 @@ const uploadLeadData = async (req, res) => {
                 counsellor_id: userId            // Default to null
             };
 
-            try {
-                // Save lead
-                const lead = await Lead.create(leadData);
+           
+    try {
+        // Check if a lead with the same name and counsellor_id exists
+        const existingLead = await Lead.findOne({
+            where: {
+                name: name,
+                counsellor_id: userId // Ensure that you are checking for the same counsellor
+            }
+        });
 
-                // Check if the counsellor_id is valid
-                if (counsellor_id) {
-                    const counsellor = await Counsellor.findOne({ where: { counsellor_id } });
-                    if (counsellor) {
-                        // Deactivate any currently active counsellor for this lead
-                        await LeadCounsellor.update(
-                            { is_active: false },
-                            { where: { lead_id: lead.lead_id, is_active: true } }
-                        );
+        if (existingLead) {
+            console.log(`Lead with name ${name} and counsellor ${userId} already exists. Skipping.`);
+        } 
+        else {
+          
+            const lead = await Lead.create(leadData);
 
-                        // Save relationship to LeadCounsellor table
-                        await LeadCounsellor.create({
-                            lead_id: lead.lead_id,
-                            counsellor_id: counsellor.counsellor_id,
-                            assigned_date: moment().format('YYYY-MM-DD HH:mm:ss'),
-                            is_active: true  // Set the new counsellor as active
-                        });
-                    } else {
-                        invalidCounsellorIds.push(counsellor_id);
-                    }
-                }
-            } catch (error) {
-                if (error.name === 'SequelizeUniqueConstraintError') {
-                    // Duplicate entry error, skip this row
-                    invalidRows.push({ rowNumber: index + 2, reason: "Duplicate phone number" });
+            if (counsellor_id) {
+                const counsellor = await Counsellor.findOne({ where: { counsellor_id } });
+                if (counsellor) {
+                   
+                    await LeadCounsellor.update(
+                        { is_active: false },
+                        { where: { lead_id: lead.lead_id, is_active: true } }
+                    );
+                    await LeadCounsellor.create({
+                        lead_id: lead.lead_id,
+                        counsellor_id: counsellor.counsellor_id,
+                        assigned_date: moment().format('YYYY-MM-DD HH:mm:ss'),
+                        is_active: true  // Set the new counsellor as active
+                    });
                 } else {
-                    // Re-throw unexpected errors
-                    throw error;
+                    invalidCounsellorIds.push(counsellor_id);
                 }
             }
+        }
+    } catch (error) {
+        if (error.name === 'SequelizeUniqueConstraintError') {
+          
+            invalidRows.push({ rowNumber: index + 2, reason: "Duplicate phone number" });
+        } else {
+           
+            throw error;
+        }
+}
         }
 
         // Clean up: delete the uploaded file
