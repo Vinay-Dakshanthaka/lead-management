@@ -50,6 +50,12 @@ const LeadForm = () => {
         }));
     };
 
+    const token = localStorage.getItem('token');
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
     const handleSubmit = (e) => {
         e.preventDefault();
         const postData = {
