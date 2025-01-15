@@ -2,6 +2,7 @@ import React from 'react';
 import { Modal, Button, Table } from 'react-bootstrap';
 
 const LeadCounsellorDetailsModal = ({ showModal, handleClose, selectedLead }) => {
+  console.log("lead details ", selectedLead)
   return (
     <Modal show={showModal} onHide={handleClose} size="lg">
       <Modal.Header closeButton>

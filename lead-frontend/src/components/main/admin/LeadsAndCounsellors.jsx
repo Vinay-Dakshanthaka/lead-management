@@ -203,7 +203,13 @@ const LeadsAndCounsellors = () => {
                     : 'No active counsellor'}
                 </td>
                 <td>
-                  <Button variant="primary" onClick={() => setSelectedLead(lead)}>
+                  <Button
+                    variant="primary"
+                    onClick={() => {
+                      setSelectedLead(lead);
+                      setShowModal(true); 
+                    }}
+                  >
                     View Details
                   </Button>
                 </td>
@@ -212,6 +218,11 @@ const LeadsAndCounsellors = () => {
           })}
         </tbody>
       </Table>
+      <LeadCounsellorDetailsModal
+        showModal={showModal}
+        handleClose={() => setShowModal(false)}
+        selectedLead={selectedLead}
+      />
 
       <Paginate
         currentPage={currentPage}
@@ -220,11 +231,6 @@ const LeadsAndCounsellors = () => {
         onPageChange={handlePageChange}
       />
 
-      <LeadCounsellorDetailsModal
-        showModal={showModal}
-        handleClose={() => setShowModal(false)}
-        selectedLead={selectedLead}
-      />
     </div>
   );
 };

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { baseURL } from '../../config';
 import LeadDetails from './LeadDetails';
+import TemplatePreview from './TemplatePreview';
 
 const TemplateDetails = ({ template, onBack }) => {
   const [images, setImages] = useState([]);
@@ -26,7 +27,7 @@ const TemplateDetails = ({ template, onBack }) => {
         }
       );
 
-      console.log("Response : ", response.data)
+      console.log('Response:', response.data);
 
       // Filter images by the selected template name
       const filteredImages = response.data.templateImages.filter(
@@ -51,6 +52,7 @@ const TemplateDetails = ({ template, onBack }) => {
       <button className="btn btn-secondary mb-4" onClick={onBack}>
         Back to Templates
       </button>
+
       <h3 className="mb-4">{template.name} - Uploaded Images</h3>
       {loading && <div className="text-center">Loading...</div>}
       {error && <div className="alert alert-danger text-center">{error}</div>}
@@ -63,12 +65,12 @@ const TemplateDetails = ({ template, onBack }) => {
 
               return (
                 <div className="col-md-4 col-sm-6 mb-4" key={media.id}>
-                  <div className="card h-100">
+                  <div className="card h-50">
                     {isImage && (
                       <img
                         src={media.image_url}
                         alt={media.template_name}
-                        className="card-img-top"
+                        className="card-img-top object-fit-contain"
                       />
                     )}
                     {isVideo && (
@@ -98,7 +100,19 @@ const TemplateDetails = ({ template, onBack }) => {
           )}
         </div>
       )}
-      <LeadDetails selectedImage={selectedImage} template={template}/>
+
+      {/* Display the selected image and preview */}
+      <div className="row mt-5">
+        <div className="col-md-6">
+          <LeadDetails selectedImage={selectedImage} template={template} />
+        </div>
+        <div className="col-md-6">
+          <div className="preview-section border rounded bg-light">
+            <h5>Template Preview</h5>
+            <TemplatePreview template={template} image={selectedImage} />
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

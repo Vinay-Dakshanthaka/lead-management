@@ -57,11 +57,22 @@ const LeadForm = () => {
             lead_id: lead_id ? lead_id : undefined
         };
 
+        const token = localStorage.getItem("token");
+            if (!token) {
+              setError("No token provided.");
+              setLoading(false);
+              return;
+            }
+            const config = {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            };
         const endpoint = lead_id
             ? `${baseURL}/api/lead/update-lead-data/${lead_id}`
             : `${baseURL}/api/lead/save-lead-data`;
 
-        axios.post(endpoint, postData)
+        axios.post(endpoint, postData, config)
             .then(response => {
                 toast.success('Lead data saved successfully!');
                 // navigate('/overview'); 
