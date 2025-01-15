@@ -663,7 +663,7 @@ const sendLaraJan2025BatchTemplate = async (req, res) => {
             return res.status(401).send({message : 'Unauthorized : No config for the asssigned admin.'})
         }
 
-        // console.log("amdin config data :: ", adminConfigData)
+        console.log("amdin config data :: ", adminConfigData)
     }
 
     if(user.role === 'ADMIN'){
