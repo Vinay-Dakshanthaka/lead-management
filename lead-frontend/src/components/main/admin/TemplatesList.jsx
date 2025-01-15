@@ -176,7 +176,7 @@ const TemplatesList = () => {
           
         )}
 
-        <MessageStatusList />
+        {/* <MessageStatusList /> */}
 
       </div>
     </>

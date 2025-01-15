@@ -6,7 +6,7 @@ const authenticateToken  = require('../middlewares/authenticateToken')
 
 const leadController = require('../controller/leadController');
 
-leadRoutes.post('/save-lead-data',authenticateToken, leadController.saveLeadData);
+leadRoutes.post('/save-lead-data', authenticateToken, leadController.saveLeadData);
 
 leadRoutes.post('/reAssignLead', leadController.reAssignLead);
 
