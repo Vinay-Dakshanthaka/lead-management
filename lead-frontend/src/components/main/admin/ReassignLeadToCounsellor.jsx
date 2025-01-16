@@ -57,7 +57,7 @@ const ReassignLeadToCounsellor = () => {
     const handleReassignCounsellor = async (leadId) => {
         const selectedCounsellorId = selectedCounsellors[leadId];
         if (!selectedCounsellorId) {
-            toast.error('Please select a counsellor before reassigning');
+            toast.error('Please select a Telecaller before reassigning');
             return;
         }
 
@@ -82,7 +82,7 @@ const ReassignLeadToCounsellor = () => {
                 config
             );
 
-            toast.success('Counsellor reassigned successfully');
+            toast.success('Telecaller reassigned successfully');
 
             // Update active counsellor data in UI
             setLeads((prevLeads) =>
@@ -99,8 +99,8 @@ const ReassignLeadToCounsellor = () => {
                 )
             );
         } catch (error) {
-            toast.error('Failed to reassign counsellor');
-            console.error('Error reassigning counsellor:', error);
+            toast.error('Failed to reassign Telecaller');
+            console.error('Error reassigning Telecaller:', error);
         }
     };
 
@@ -146,9 +146,9 @@ const ReassignLeadToCounsellor = () => {
                         <th>Lead Name</th>
                         <th>Lead Email</th>
                         <th>Lead Phone</th>
-                        <th>Active Counsellor</th>
-                        <th>Select Counsellor</th>
-                        <th>Reassign Counsellor</th>
+                        <th>Active Telecaller</th>
+                        <th>Select Telecaller</th>
+                        <th>Reassign Telecaller</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -178,7 +178,7 @@ const ReassignLeadToCounsellor = () => {
                                     className="btn btn-primary"
                                     onClick={() => handleReassignCounsellor(lead.lead_id)}
                                 >
-                                    Reassign Counsellor
+                                    Reassign Telecaller
                                 </button>
                             </td>
                         </tr>

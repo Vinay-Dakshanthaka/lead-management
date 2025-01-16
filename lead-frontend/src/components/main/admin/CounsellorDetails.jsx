@@ -29,8 +29,8 @@ const CounsellorsDetails = () => {
 
         console.log('response ', response);
       } catch (error) {
-        toast.error('Failed to fetch counsellors');
-        console.error('Error fetching counsellors:', error);
+        toast.error('Failed to fetch Telecaller');
+        console.error('Error fetching Telecaller:', error);
       } finally {
         setLoading(false);
       }
@@ -46,7 +46,7 @@ const CounsellorsDetails = () => {
   return (
     <div className="container mt-5">
       <Toaster />
-      <h2 className="text-center mb-4">Counsellors Details</h2>
+      <h2 className="text-center mb-4">Telecaller Details</h2>
       <div className="table-responsive">
         <table className="table table-striped table-bordered">
           <thead className="thead-dark">
@@ -61,7 +61,7 @@ const CounsellorsDetails = () => {
           <tbody>
             {counsellors.length === 0 ? (
               <tr>
-                <td colSpan="4" className="text-center">No counsellors found</td>
+                <td colSpan="4" className="text-center">No Telecaller found</td>
               </tr>
             ) : (
               counsellors.map((counsellor) => (

@@ -6,7 +6,7 @@ const LeadCounsellorDetailsModal = ({ showModal, handleClose, selectedLead }) =>
   return (
     <Modal show={showModal} onHide={handleClose} size="lg">
       <Modal.Header closeButton>
-        <Modal.Title>Lead and Counsellor Details</Modal.Title>
+        <Modal.Title>Lead and Telecaller Details</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         {selectedLead && (
@@ -17,7 +17,7 @@ const LeadCounsellorDetailsModal = ({ showModal, handleClose, selectedLead }) =>
             <p><strong>Phone:</strong> {selectedLead.lead_phone}</p>
             <p><strong>Joining Status:</strong> {selectedLead.lead_joining_status ? 'Joined' : 'Not Joined'}</p>
 
-            <h5 className="mt-4">Counsellor Details</h5>
+            <h5 className="mt-4">Telecaller Details</h5>
             <Table bordered>
               <thead>
                 <tr>

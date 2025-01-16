@@ -33,7 +33,7 @@ const CounsellorDashboard = () => {
         const response = await axios.get(`${baseURL}/api/counsellor/getAllLeadsForCounsellorById`, config);
 
         if (response.status === 404) {
-          setError('No leads found for this counsellor.');
+          setError('No leads found for this Telecaller.');
         } else {
           setData(response.data);
 

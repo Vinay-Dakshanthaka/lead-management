@@ -32,7 +32,7 @@ const UpdateCounsellorDetails = ({ counsellor_id }) => {
             setLoading(false);
         } catch (error) {
             setLoading(false);
-            toast.error("Failed to fetch counsellor details");
+            toast.error("Failed to fetch Telecaller details");
         }
     };
 
@@ -60,10 +60,10 @@ const UpdateCounsellorDetails = ({ counsellor_id }) => {
                 phone: counsellor.phone
             },config);
             setLoading(false);
-            toast.success("Counsellor details updated successfully");
+            toast.success("Telecaller details updated successfully");
         } catch (error) {
             setLoading(false);
-            toast.error("Failed to update counsellor details");
+            toast.error("Failed to update Telecaller details");
         }
     };
 

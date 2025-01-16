@@ -58,7 +58,7 @@ const SignUpWithDummyPassword = () => {
             }, config);
 
             if (response.status === 201) {
-                toast.success("Account created successfully! Check your email for the password.");
+                toast.success("Account created successfully! Email Sent.");
                 setEmail("");
                 setPhone("");
             }
@@ -70,7 +70,7 @@ const SignUpWithDummyPassword = () => {
                 } else if (statusCode === 404) {
                     toast.error("No user found.");
                 } else if (statusCode === 409) {
-                    toast.error("Counsellor with this email or phone number already exists.");
+                    toast.error("Telecaller with this email or phone number already exists.");
                 } else {
                     toast.error("Failed to create account.");
                 }
@@ -84,7 +84,7 @@ const SignUpWithDummyPassword = () => {
 
     return (
         <div className="container my-5">
-            <h2>Create  Account for Counsellor</h2>
+            <h2>Create  Account for Telecaller</h2>
             <form onSubmit={handleSubmit} className="form">
                 {/* Email Field */}
                 <div className="form-group col-lg-6 col-md-8 col-sm-12 my-3">

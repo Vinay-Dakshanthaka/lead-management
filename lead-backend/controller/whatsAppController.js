@@ -1216,7 +1216,7 @@ const sendMediaTemplate = async (req, res) => {
           parameterCount 
       } = req.body;
 
-      console.log(req.body, "---------------------------------------");
+    //   console.log(req.body, "---------------------------------------");
 
       const userId = req.counsellor_id;
       let adminConfigData;
@@ -1306,7 +1306,7 @@ const sendMediaTemplate = async (req, res) => {
 
       if (parameterCount > 0) {
           if (parameterCount >= 1) {
-              bodyParams.push({ type: "text", text: `Hello ${userName}!` });
+              bodyParams.push({ type: "text", text: `Hello ${userName || "there"}!` });
           }
 
           if (parameterCount >= 2) {

@@ -209,7 +209,7 @@ const AdminSignUpForm = () => {
                             >
                                 <option value="">--- Select Role ---</option>
                                 <option value="ADMIN">ADMIN</option>
-                                <option value="COUNSELLOR">COUNSELLOR</option>
+                                <option value="COUNSELLOR">TELECALLER</option>
                             </select>
                         </div>
 

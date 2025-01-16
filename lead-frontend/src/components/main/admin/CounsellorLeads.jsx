@@ -48,7 +48,7 @@ const CounsellorLeads = () => {
     <div className="container mt-4">
       {data && (
         <>
-          <h3 className="mb-4 fw-bold text-primary">Counsellor Details</h3>
+          <h3 className="mb-4 fw-bold text-primary">Telecaller Details</h3>
           <div className="counsellor-info mb-4 row">
             <p className="col-lg-4 col-md-auto col-sm-auto fw-bold lead"><strong>ID:</strong> {data.counsellor.counsellor_id}</p>
             <p className="col-lg-4 col-md-auto col-sm-auto fw-bold lead"><strong>Name:</strong> {data.counsellor.counsellor_name || 'N/A'}</p>

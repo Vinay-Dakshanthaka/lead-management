@@ -139,11 +139,11 @@ const LeadsAndCounsellors = () => {
           },
         };
         const response = await axios.get(`${baseURL}/api/admin/getAllLeadsAndCounsellors`, config);
-        console.log(response.data,"-----------------")
+        // console.log(response.data,"-----------------")
         setLeads(response.data.leads);
         setFilteredLeads(response.data.leads);
       } catch (error) {
-        toast.error('Failed to fetch leads and counsellors data');
+        toast.error('Failed to fetch leads and Telecaller data');
         console.error('Error fetching data:', error);
       }
     };
@@ -165,10 +165,10 @@ const LeadsAndCounsellors = () => {
     <div className="container mt-4">
       <div className="container ">
         <Link to="/assign-lead-to-counsellor" className="btn btn-outline-primary">
-          Reassign Leads to Counsellor
+          Reassign Leads to Telecaller
         </Link>
       </div>
-      <h2>Leads and Counsellors</h2>
+      <h2>Leads and Telecaller</h2>
 
       <div className="mb-3">
         <Form.Control
@@ -185,7 +185,7 @@ const LeadsAndCounsellors = () => {
             <th>Lead Name</th>
             <th>Lead Email</th>
             <th>Lead Phone</th>
-            <th>Active Counsellor</th>
+            <th>Active Telecaller</th>
             <th>Actions</th>
           </tr>
         </thead>
