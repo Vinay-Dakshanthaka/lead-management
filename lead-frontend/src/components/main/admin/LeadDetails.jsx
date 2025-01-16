@@ -11,6 +11,10 @@ const LeadDetails = ({ selectedImage, template}) => {
   const [selectedLeads, setSelectedLeads] = useState([]);
   const [messageStatus, setMessageStatus] = useState({});
 
+  const [phoneNumber, setPhoneNumber] = useState(''); // New state for phone number
+  const [messageSent, setMessageSent] = useState(false); // To track message sent status
+  const [hasAttemptedSend, setHasAttemptedSend] = useState(false);
+
   const isBodyPresent = template.components.some(components => components.type === 'BODY');
   let parameterCount = 0;
   let textBody ;
@@ -75,7 +79,7 @@ const LeadDetails = ({ selectedImage, template}) => {
     // Extract lead information
     const { phone, name } = lead;
     const to = `91${phone}`; // Format phone number to include country code
-   
+     console.log(to,"---------------to")
     if (isBodyPresent) {
       // Find the BODY component
       const bodyComponent = template.components.find(component => component.type === 'BODY');
@@ -171,8 +175,43 @@ const LeadDetails = ({ selectedImage, template}) => {
     }
   };
 
+   const handlePhoneChange = (e) => {
+    setPhoneNumber(e.target.value);
+  };
+
+  const handleSendMessage = async () => {
+    setHasAttemptedSend(true); // Mark that the send button was clicked
+    if (phoneNumber) {
+      try {
+        const to = phoneNumber;
+        const lead = { phone: to, name: "Custom Lead" };
+
+        await sendMessage(lead); // Assume sendMessage is a function that sends the message
+        setMessageSent(true);
+      } catch (error) {
+        console.error("Error sending message:", error);
+        setMessageSent(false);
+      }
+    } else {
+      setMessageSent(false); // Handle cases where phoneNumber is empty
+    }
+  };
+
   return (
     <div className="container mt-5">
+            {/* Input field for phone number */}
+            <input
+        type="text"
+        className="form-control"
+        placeholder="Enter phone number"
+        value={phoneNumber}
+        onChange={handlePhoneChange}
+      />
+
+      {/* Send Message Button */}
+      <button className="btn btn-success mt-3" onClick={handleSendMessage}>
+        Send Message
+      </button>    
       <h3 className="mb-4">Lead Details</h3>
       
       {/* Group Filter */}
