@@ -87,55 +87,57 @@ const isToday = (date) => moment(date).isSame(moment(), 'day');
 // Save new lead
 const saveLeadData = async (req, res) => {
     try {
-        const userId = req.counsellor_id;
-        console.log(userId,"-----------savedata")
+        const userId = req.counsellor_id;  // Get the counsellor_id from the request
+        console.log(userId, "-----------savedata");
+
         const { name, email, phone, counsellor_id } = req.body;
-
-        // Check if the lead with the same phone already exists
-        let lead = await Lead.findOne({
+        console.log(req.body,"------------------------------------")
+        // Check if the lead with the same phone already exists for the same counsellor
+        let existingLead = await Lead.findOne({
             where: { 
-                phone : phone,
-                counsellor_id : counsellor_id,
-             }
+                phone: phone,              // Check for the same phone number
+                counsellor_id: userId // Check for the same counsellor
+            }
         });
+        console.log(existingLead,"--------------------existinglead")
 
-        // If a lead with the same phone already exists, return an error
-        if (lead) {
-            return res.status(409).send({ message: "Lead with this counsellor  already exists" });
+        // If a lead with the same phone and counsellor_id already exists, return a conflict message
+        if (existingLead) {
+            return res.status(409).send({ message: "Lead with this phone number already assigned to the same counsellor." });
         }
 
-        // If lead doesn't exist, create a new lead
-        lead = await Lead.create({
+        // If the lead doesn't exist, create a new lead
+        const newLead = await Lead.create({
             name,
             email,
             phone,
-            counsellor_id: userId
+            counsellor_id: userId  // Assign counsellor_id from the request body
         });
 
-        // Check if the counsellor exists
+        // Check if the counsellor exists in the database
         const counsellor = await Counsellor.findByPk(counsellor_id);
         if (!counsellor) {
             return res.status(404).send({ message: "Counsellor not found" });
         }
 
-        // Check if the lead has an active counsellor and make them inactive
+        // Check if the lead already has an active counsellor, and deactivate the current one
         await LeadCounsellor.update(
             { is_active: false },
-            { where: { lead_id: lead.lead_id, is_active: true } }
+            { where: { lead_id: newLead.lead_id, is_active: true } }
         );
 
         // Assign the new counsellor as active
-        const assignedDate = moment().format('YYYY-MM-DD HH:mm:ss');  // Store date and time
+        const assignedDate = moment().format('YYYY-MM-DD HH:mm:ss');  // Store date and time of assignment
 
         await LeadCounsellor.create({
-            lead_id: lead.lead_id,
+            lead_id: newLead.lead_id,
             counsellor_id: counsellor.counsellor_id,
             assigned_date: assignedDate,
-            is_active: true  // Set the new counsellor as active
+            is_active: true  // Set the new counsellor as active for this lead
         });
 
-        // Send success response
-        return res.status(201).send({ message: "Lead saved and assigned to counsellor successfully", lead });
+        // Send a success response
+        return res.status(201).send({ message: "Lead saved and assigned to counsellor successfully", lead: newLead });
 
     } catch (error) {
         console.error("Error saving lead:", error);
