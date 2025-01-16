@@ -74,11 +74,11 @@ const AdminDashboard = () => {
       </Row>
 
       {/* Counsellor-wise Joined Leads */}
-      <h3 className="mb-3">Counsellor-wise Joined Leads</h3>
+      <h3 className="mb-3">Telecaller-wise Joined Leads</h3>
       <Table bordered hover responsive>
         <thead>
           <tr>
-            <th>Counsellor Name</th>
+            <th>Telecaller Name</th>
             <th>Email</th>
             <th>Joined Leads Count</th>
           </tr>
@@ -95,11 +95,11 @@ const AdminDashboard = () => {
       </Table>
 
       {/* Counsellor-wise Interested Leads */}
-      <h3 className="mb-3">Counsellor-wise Interested Leads</h3>
+      <h3 className="mb-3">Telecaller-wise Interested Leads</h3>
       <Table bordered hover responsive>
         <thead>
           <tr>
-            <th>Counsellor Name</th>
+            <th>Telecaller Name</th>
             <th>Email</th>
             <th>Interested Leads Count</th>
           </tr>

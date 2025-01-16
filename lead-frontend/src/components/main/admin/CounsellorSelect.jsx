@@ -42,9 +42,9 @@ const CounsellorSelect = ({ onSelect }) => {
 
   return (
     <Form.Group controlId="counsellorSelect">
-      <Form.Label>Select Counsellor</Form.Label>
+      <Form.Label>Select Telecaller</Form.Label>
       <Form.Control as="select" onChange={(e) => onSelect(e.target.value)}>
-        <option value="" className='text-dark'>Select a counsellor</option>
+        <option value="" className='text-dark'>Select a Telecaller</option>
         {counsellors.map((counsellor) => (
           <option key={counsellor.counsellor_id} value={counsellor.counsellor_id}>
               {counsellor.counsellor_id}

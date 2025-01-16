@@ -44,7 +44,7 @@ const AdminDetails = () => {
     return (
         <div className="container mt-5">
             <Toaster />
-            <h2 className="text-center mb-4">Counsellors Details</h2>
+            <h2 className="text-center mb-4">Telecaller Details</h2>
             <div className="table-responsive">
                 <table className="table table-striped table-bordered">
                     <thead className="thead-dark">
@@ -60,7 +60,7 @@ const AdminDetails = () => {
                         {counsellors.length === 0 ? (
                             <tr>
                                 <td colSpan="5" className="text-center">
-                                    No counsellors found
+                                    No Telecaller found
                                 </td>
                             </tr>
                         ) : (

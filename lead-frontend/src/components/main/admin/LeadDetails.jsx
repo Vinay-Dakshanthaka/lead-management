@@ -95,12 +95,9 @@ const LeadDetails = ({ selectedImage, template}) => {
         // Count the matches (parameters)
         parameterCount = matches ? matches.length : 0;
     
-        console.log(`Number of parameters: ${parameterCount}`);
       } else {
-        console.log("BODY component does not have text.");
       }
     } else {
-      console.log("No BODY component found.");
     }
       // Prepare the payload for sending
       const payload = {
@@ -126,7 +123,6 @@ const LeadDetails = ({ selectedImage, template}) => {
           },
         }
       );
-      console.log(response,"--------------------------payload")
 
       // Update message status as success
       setMessageStatus((prev) => ({
