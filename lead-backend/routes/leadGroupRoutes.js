@@ -18,5 +18,7 @@ leadGroupRoutes.delete('/deleteLeadGroup', leadGroupController.deleteLeadGroup);
 
 leadGroupRoutes.get('/getAllLeadGroups', authenticateToken,  leadGroupController.getAllLeadGroups);
 
+leadGroupRoutes.get('/getLeadGroupsByCreator', authenticateToken,  leadGroupController.getLeadGroupsByCreator);
+
 
 module.exports = leadGroupRoutes;

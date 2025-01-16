@@ -10,6 +10,9 @@ const LeadGroupManager = () => {
   const [formData, setFormData] = useState({ group_name: "", description: "" });
   const [loading, setLoading] = useState(false); // Loading state
 
+  const [leadGroups, setLeadGroups] = useState([]);
+    const [error, setError] = useState(null);
+
   // Fetch all groups
   const fetchGroups = async () => {
     try {
@@ -67,13 +70,88 @@ const LeadGroupManager = () => {
   useEffect(() => {
     fetchGroups();
   }, []);
+   
+  const fetchLeadGroupsByCreator = async () => {
+    try {
+        const token = localStorage.getItem("token");
+        console.log(token,"-------------------")
+        const config = {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        };
+        const response = await axios.get(`${baseURL}/api/leadGroup/getLeadGroupsByCreator`, config);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching lead groups:', error);
+        throw error;
+    }
+};
+
+useEffect(() => {
+    const loadLeadGroups = async () => {
+        try {
+            const groups = await fetchLeadGroupsByCreator();
+            setLeadGroups(groups);
+        } catch (err) {
+            setError(err.message);
+        }
+    };
+
+    loadLeadGroups();
+}, []);
+
+if (error) return <p>Error: {error}</p>;
+
+// Show a loading message if `leadGroups` is still null
+if (leadGroups === null) return <p>Loading...</p>;
 
   return (
+    <>
+       <div className="container mt-4">
+  <h2>Lead Groups</h2>
+  <div className="row">
+    {leadGroups.length === 0 ? (
+      <p>No lead groups found.</p>
+    ) : (
+      <ul className="list-group">
+        {leadGroups.map((group) => (
+          <li
+            key={group.group_id}
+            className="list-group-item d-flex justify-content-between align-items-center"
+          >
+            <div>
+              <h3>{group.group_name}</h3>
+              <p className="mb-0">
+                <strong>Description:</strong> {group.description || 'No description available'}
+              </p>
+              <p className="text-muted small mb-0">
+                <strong>Created By:</strong> {group.Creator?.name || 'Unknown'}
+              </p>
+              <p>
+                <strong>Active:</strong> {group.is_active ? 'Yes' : 'No'}
+              </p>
+            </div>
+            <div>
+              <button
+                className="btn btn-primary btn-sm me-2"
+                onClick={() => handleEdit(group)}
+              >
+                Edit
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+</div>
+
     <div className="container mt-4">
-      <h2>Lead Group Manager</h2>
+      {/* <h2>Lead Group Manager</h2> */}
       <div className="row">
-        {/* Group List */}
-        <div className="col-md-6">
+      
+        {/* <div className="col-md-6">
           <h4>Groups</h4>
           {loading && <p>Loading groups...</p>}
           <ul className="list-group">
@@ -100,9 +178,9 @@ const LeadGroupManager = () => {
               </li>
             ))}
           </ul>
-        </div>
+        </div> */}
 
-        {/* Group Form */}
+     
         <div className="col-md-6">
           <h4>Edit Group</h4>
           <form onSubmit={handleSubmit}>
@@ -147,6 +225,7 @@ const LeadGroupManager = () => {
       </div>
       <CreateLeadGroup />
     </div>
+    </>
   );
 };
 

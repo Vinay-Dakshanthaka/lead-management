@@ -338,6 +338,80 @@ const getAllLeadGroups = async (req, res) => {
     }
 };
 
+const getLeadGroupsByCreator = async (req, res) => {
+    try {
+        const created_by = req.counsellor_id; // Retrieve counsellor ID from the request
+
+        // Fetch the role of the logged-in user
+        const loggedInUser = await db.Counsellor.findOne({
+            where: { counsellor_id: created_by },
+            attributes: ["role"], // Fetch only the role field
+        });
+
+        if (!loggedInUser) {
+            return res.status(404).json({ message: "User not found." });
+        }
+
+        const userRole = loggedInUser.role;
+
+        if (userRole === "ADMIN") {
+            // Fetch all counsellors assigned by this admin
+            const counsellors = await db.Counsellor.findAll({
+                where: {
+                    assigned_by: created_by,
+                },
+                attributes: ["counsellor_id"], // Fetch only the counsellor IDs
+            });
+
+            const counsellorIds = counsellors.map(counsellor => counsellor.counsellor_id);
+            counsellorIds.push(created_by); // Include the admin's own ID
+
+            // Fetch lead groups for admin and their assigned counsellors
+            const leadGroups = await LeadGroup.findAll({
+                where: {
+                    created_by: counsellorIds, // Fetch groups created by the admin or their counsellors
+                },
+                include: [
+                    {
+                        model: db.Counsellor,
+                        as: "Creator",
+                        attributes: ["counsellor_id", "name", "email", "role"],
+                    },
+                ],
+            });
+
+            return res.status(200).json(leadGroups);
+        } else if (userRole === "COUNSELLOR") {
+            // Fetch groups created by this counsellor
+            const leadGroups = await LeadGroup.findAll({
+                where: {
+                    created_by: created_by,
+                },
+                include: [
+                    {
+                        model: db.Counsellor,
+                        as: "Creator",
+                        attributes: ["counsellor_id", "name", "email", "role"],
+                    },
+                ],
+            });
+
+            if (leadGroups.length === 0) {
+                return res.status(404).json({ message: "No groups found for the specified creator." });
+            }
+
+            return res.status(200).json(leadGroups);
+        } else {
+            return res.status(403).json({ message: "Unauthorized role." });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "An error occurred while fetching lead groups.", error });
+    }
+};
+
+
+
 
 
 
@@ -348,4 +422,5 @@ module.exports = {
     updateLeadGroup,
     deleteLeadGroup,
     getAllLeadGroups,
+    getLeadGroupsByCreator,
 }
