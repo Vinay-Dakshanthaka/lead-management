@@ -20,7 +20,7 @@ const LeadDetails = ({ selectedImage, template}) => {
   let textBody ;
     console.log(template,"-----------template")
   // Fetch groups on component load
-  useEffect(() => {
+useEffect(() => {
     const fetchGroups = async () => {
       try {
         const token = localStorage.getItem('token');
@@ -30,8 +30,8 @@ const LeadDetails = ({ selectedImage, template}) => {
           },
         };
 
-        const response = await axios.get(`${baseURL}/api/leadGroup/getAllLeadGroups`, config);
-        setGroups(response.data.groups);       
+        const response = await axios.get(`${baseURL}/api/leadGroup/getLeadGroupsByCreator`, config);
+        setGroups(response.data); // Assuming response.data is the array
       } catch (error) {
         console.error('Error fetching groups:', error);
         toast.error('Failed to fetch groups');
@@ -61,6 +61,7 @@ const LeadDetails = ({ selectedImage, template}) => {
             ...config,
           }
         );
+        
     
         setLeads(Array.isArray(response.data.leads) ? response.data.leads : []);
       } catch (error) {
@@ -76,20 +77,18 @@ const LeadDetails = ({ selectedImage, template}) => {
   const sendMessage = async (lead) => {
     console.log("Lead details:", lead);
     
-    // Extract lead information
     const { phone, name } = lead;
-    const to = `91${phone}`; // Format phone number to include country code
+    const to = `91${phone}`; 
      console.log(to,"---------------to")
     if (isBodyPresent) {
-      // Find the BODY component
+      
       const bodyComponent = template.components.find(component => component.type === 'BODY');
     
-      // Ensure the BODY component exists and has text
+   
       if (bodyComponent && bodyComponent.text) {
          textBody = bodyComponent.text;
         // console.log(text, "---------------------------");
     
-        // Use a regular expression to match all {{}} patterns (parameters like {{1}}, {{2}}, etc.)
         const matches = textBody.match(/{{\d+}}/g); // Matches all instances of {{number}}
     
         // Count the matches (parameters)
@@ -124,24 +123,23 @@ const LeadDetails = ({ selectedImage, template}) => {
         }
       );
 
-      // Update message status as success
+     
       setMessageStatus((prev) => ({
         ...prev,
         [lead.lead_id]: 'success',
       }));
 
-      // Show success toast
+    
       toast.success(`Message sent to ${name}`);
     } catch (error) {
       console.error('Error sending message:', error);
 
-      // Update message status as failure
       setMessageStatus((prev) => ({
         ...prev,
         [lead.lead_id]: 'failure',
       }));
 
-      // Show error toast
+    
       toast.error(`Failed to send message to ${name}`);
     }
 };
@@ -176,26 +174,26 @@ const LeadDetails = ({ selectedImage, template}) => {
   };
 
   const handleSendMessage = async () => {
-    setHasAttemptedSend(true); // Mark that the send button was clicked
+    setHasAttemptedSend(true); 
     if (phoneNumber) {
       try {
         const to = phoneNumber;
         const lead = { phone: to, name: "Custom Lead" };
 
-        await sendMessage(lead); // Assume sendMessage is a function that sends the message
+        await sendMessage(lead); 
         setMessageSent(true);
       } catch (error) {
         console.error("Error sending message:", error);
         setMessageSent(false);
       }
     } else {
-      setMessageSent(false); // Handle cases where phoneNumber is empty
+      setMessageSent(false); 
     }
   };
 
   return (
     <div className="container mt-5">
-            {/* Input field for phone number */}
+           
             <input
         type="text"
         className="form-control"
@@ -211,6 +209,8 @@ const LeadDetails = ({ selectedImage, template}) => {
       <h3 className="mb-4">Lead Details</h3>
       
       {/* Group Filter */}
+      <div className="container">
+      <h1 className="mb-4">Select Lead Group</h1>
       <div className="mb-3">
         <select
           className="form-select"
@@ -227,6 +227,7 @@ const LeadDetails = ({ selectedImage, template}) => {
           ))}
         </select>
       </div>
+    </div>
 
       <div className="d-flex justify-content-end mb-3">
         <button
