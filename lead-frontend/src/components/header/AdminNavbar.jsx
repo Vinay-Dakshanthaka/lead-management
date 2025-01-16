@@ -30,7 +30,17 @@ const AdminNavbar = () => {
   return (
     <>
       <Nav.Link as={Link} to="/admin-dashboard">Dashboard</Nav.Link>
-      <Nav.Link as={Link} to="/counsellor-details">Counsellors</Nav.Link>
+      {/* <Nav.Link as={Link} to="/counsellor-details">Telecallers</Nav.Link> */}
+        {/* Dropdown for Lead Related Links */}
+      <Dropdown>
+        <Dropdown.Toggle variant="link" id="telecaller-dropdown" className="nav-link">
+          Telecaller
+        </Dropdown.Toggle>
+        <Dropdown.Menu>
+          <Dropdown.Item as={Link} to="/counsellor-details">Telecaller Details</Dropdown.Item>
+          <Dropdown.Item as={Link} to="/create-account-counsellor">Create Account</Dropdown.Item>
+        </Dropdown.Menu>
+      </Dropdown>
 
       {/* Dropdown for Lead Related Links */}
       <Dropdown>
@@ -46,10 +56,10 @@ const AdminNavbar = () => {
         </Dropdown.Menu>
       </Dropdown>
 
-      <Nav.Link as={Link} to="/create-account-counsellor">Create Account</Nav.Link>
+      {/* <Nav.Link as={Link} to="/create-account-counsellor">Create Account</Nav.Link> */}
       <Nav.Link as={Link} to="/group-management">Lead Groups</Nav.Link>
       <Nav.Link as={Link} to="/create-template">Templates</Nav.Link>
-      <Nav.Link as={Link} to="/whatsApp-leads">WhatsApp Leads</Nav.Link>
+      {/* <Nav.Link as={Link} to="/whatsApp-leads">WhatsApp Leads</Nav.Link> */}
       {/* <Nav.Link as={Link} to="/message-status-list">WhatsApp Leads</Nav.Link> */}
     </>
   );

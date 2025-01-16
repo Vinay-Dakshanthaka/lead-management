@@ -182,6 +182,7 @@ const LeadsAndCounsellors = () => {
       <Table responsive bordered>
         <thead>
           <tr>
+            <th>SI.NO</th>
             <th>Lead Name</th>
             <th>Lead Email</th>
             <th>Lead Phone</th>
@@ -190,10 +191,11 @@ const LeadsAndCounsellors = () => {
           </tr>
         </thead>
         <tbody>
-          {paginateLeads().map((lead) => {
+          {paginateLeads().map((lead, index) => {
             const activeCounsellor = lead.counsellors.find((c) => c.is_active);
             return (
               <tr key={lead.lead_id}>
+                <td>{index+1}</td>
                 <td>{lead.lead_name}</td>
                 <td>{lead.lead_email}</td>
                 <td>{lead.lead_phone}</td>

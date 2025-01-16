@@ -100,13 +100,13 @@ const CounsellorDashboard = () => {
               </tr>
             </thead>
             <tbody>
-              {data.leads.map((lead) => {
+              {data.leads.map((lead, index) => {
                 const nextContactDate = lead.next_contact_date ? moment(lead.next_contact_date).toDate() : null;
                 const isLeadNextContactToday = nextContactDate && isToday(nextContactDate);
 
                 return (
                   <tr key={lead.lead_id} className={isLeadNextContactToday ? 'bg-warning text-dark' : ''}>
-                    <td>{lead.lead_id}</td>
+                    <td>{index+1}</td>
                     <td>{lead.lead_name}</td>
                     <td>{lead.lead_email}</td>
                     <td>{lead.lead_phone}</td>
