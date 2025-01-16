@@ -85,7 +85,10 @@ const getAllLeadsForCounsellorById = async (req, res) => {
         if (counsellor.role === 'ADMIN') {
             // Fetch all leads directly from the Lead table
             const allLeads = await db.Lead.findAll({
-                attributes: ['lead_id', 'name', 'email', 'phone', 'joining_status'] // Specify relevant Lead fields
+                where :{
+                    counsellor_id : counsellor_id
+                },
+                attributes: ['lead_id', 'name', 'email', 'phone', 'joining_status'] 
             });
 
             // If no leads are found, return a message

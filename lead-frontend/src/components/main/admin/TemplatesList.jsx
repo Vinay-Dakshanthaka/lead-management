@@ -54,11 +54,11 @@ const TemplatesList = () => {
                     {template.name} -
                     <span
                       className={`badge ${template.status === 'APPROVED'
-                          ? 'bg-success' // Green for APPROVED
+                          ? 'bg-success' 
                           : template.status === 'PENDING'
-                            ? 'bg-warning' // Yellow for PENDING
+                            ? 'bg-warning' 
                             : template.status === 'REJECTED'
-                              ? 'bg-danger' // Red for REJECTED
+                              ? 'bg-danger' 
                               : ''
                         }`}
                     >
