@@ -182,7 +182,7 @@ const LeadDetails = ({ selectedImage, template}) => {
         const to = phoneNumber;
         const lead = { phone: to, name: "Custom Lead" };
 
-        await sendMessage(lead); // Assume sendMessage is a function that sends the message
+        await sendMessage(lead); 
         setMessageSent(true);
       } catch (error) {
         console.error("Error sending message:", error);
