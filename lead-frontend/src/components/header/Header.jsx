@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Nav, Navbar } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
-import Cookies from 'js-cookie';
 import AdminNavbar from './AdminNavbar';
 import CounsellorNavbar from './CounsellorNavbar';
 import toast, { Toaster } from 'react-hot-toast';
@@ -26,7 +25,7 @@ const Header = ({ role, isLoggedIn, onSignOut }) => {
         <Navbar bg="dark" variant="dark" expand="lg" sticky="top">
           <Toaster />
             <Container>
-                <Navbar.Brand as={Link} to="/">Lead Management</Navbar.Brand>
+                <Navbar.Brand as={Link} to="#">Lead Management</Navbar.Brand>
                 <Navbar.Toggle aria-controls="basic-navbar-nav" />
                 <Navbar.Collapse id="basic-navbar-nav">
                     <Nav className="ml-auto">

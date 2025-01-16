@@ -3,6 +3,7 @@ import axios from 'axios';
 import { baseURL } from '../../config';
 import { toast, Toaster } from 'react-hot-toast';
 import { Link } from 'react-router-dom'; // Import Link from react-router-dom
+import SignUpWithDummyPassword from '../auth/SignUpWithDummyPassword'
 
 const CounsellorsDetails = () => {
   const [counsellors, setCounsellors] = useState([]);
@@ -45,6 +46,7 @@ const CounsellorsDetails = () => {
 
   return (
     <div className="container mt-5">
+      <SignUpWithDummyPassword />
       <Toaster />
       <h2 className="text-center mb-4">Telecaller Details</h2>
       <div className="table-responsive">
@@ -64,10 +66,10 @@ const CounsellorsDetails = () => {
                 <td colSpan="4" className="text-center">No Telecaller found</td>
               </tr>
             ) : (
-              counsellors.map((counsellor) => (
+              counsellors.map((counsellor, index) => (
                 <tr key={counsellor.counsellor_id}>
-                  <td>{counsellor.counsellor_id}</td>
-                  <td>{counsellor.name}</td>
+                  <td>{index+1}</td>
+                  <td>{counsellor.name ? counsellor.name : 'N/A'}</td>
                   <td>{counsellor.email}</td>
                   <td>{counsellor.phone}</td>
                   <td>
