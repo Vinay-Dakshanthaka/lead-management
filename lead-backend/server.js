@@ -21,20 +21,20 @@ const interestedLeadsWhatsAppRoute = require('./routes/interestedLeadWhatsAppRou
 const app = express();
 
 
-// const corsOptions = {
-//     // origin: 'https://www.laragrooming.com',
-//     // origin: ['https://leads.paintpulse.in'],
-//     origin: ['https://leads.laragrooming.com'], 
-//     optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
-//   };
+const corsOptions = {
+    // origin: 'https://www.laragrooming.com',
+    // origin: ['https://leads.paintpulse.in'],
+    origin: ['https://leads.laragrooming.com'], 
+    optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+  };
   
-// // Enable CORS 
-// // app.use(cors(corsOptions)); 
+// Enable CORS 
+app.use(cors(corsOptions)); 
 
-app.use(cors({
-    origin: 'http://localhost:5173', // Client URL
-    credentials: true // Allow credentials (cookies) to be sent
-}));
+// app.use(cors({
+//     origin: 'http://localhost:5173', // Client URL
+//     credentials: true // Allow credentials (cookies) to be sent
+// }));
 
 app.use(bodyParser.json());
 app.use(cookieParser()); // Use cookie-parser
