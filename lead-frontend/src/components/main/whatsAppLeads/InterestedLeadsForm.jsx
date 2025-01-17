@@ -15,6 +15,7 @@ const InterestedLeadsForm = () => {
     });
 
     const [loading, setLoading] = useState(false);
+    const [isSubmitted, setIsSubmitted] = useState(false);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -40,11 +41,13 @@ const InterestedLeadsForm = () => {
                     college: "",
                     place: "",
                 });
+                setIsSubmitted(true); // Update the submission state
             }
         } catch (error) {
             if (error && error.status === 409) {
                 toast.success("Thank you! We will contact you soon");
-            }else{
+                setIsSubmitted(true); // Update the submission state
+            } else {
                 console.error("Error while saving lead data: ", error);
                 toast.error(error.message || "Failed to save your details. Please try again later.");
             }
@@ -64,35 +67,38 @@ const InterestedLeadsForm = () => {
                                 <h4 className="ms-3 mb-0">Lara Technologies</h4>
                             </div>
                         </div>
-                        <div className="row g-0">
-                            {/* Left Side - QR Code */}
-                            <div className="col-md-4 text-center bg-light p-4">
-                                <img
-                                    src={whatsAppQRCode}
-                                    alt="WhatsApp QR Code"
-                                    className="img-fluid rounded shadow-sm"
-                                    style={{ maxHeight: "300px" }}
-                                />
-                                <p className="mt-3">
-                                    Scan the QR code to connect with us on WhatsApp or click the link below to join our channel!
-                                </p>
-                                <a
-                                    href="https://whatsapp.com/channel/0029Var9Wub30LKJP7fK7y06"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="btn btn-success mt-2"
-                                    style={{
-                                        textDecoration: "none",
-                                        fontWeight: "bold",
-                                    }}
-                                >
-                                    Join Our WhatsApp Channel
-                                </a>
-                            </div>
-                            {/* Right Side - Form */}
-                            <div className="col-md-8">
-                                <div className="card-body">
-                                    <h5 className="text-center mb-4">Please fill the form We will get back to you soon!</h5>
+                        <div className="card-body">
+                            {isSubmitted ? (
+                                // QR Code Section
+                                <div className="text-center">
+                                    <img
+                                        src={whatsAppQRCode}
+                                        alt="WhatsApp QR Code"
+                                        className="img-fluid rounded shadow-sm"
+                                        style={{ maxHeight: "300px" }}
+                                    />
+                                    <p className="mt-3">
+                                        Scan the QR code to connect with us on WhatsApp or click the link below to join our channel!
+                                    </p>
+                                    <a
+                                        href="https://whatsapp.com/channel/0029Var9Wub30LKJP7fK7y06"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="btn btn-success mt-2"
+                                        style={{
+                                            textDecoration: "none",
+                                            fontWeight: "bold",
+                                        }}
+                                    >
+                                        Join Our WhatsApp Channel
+                                    </a>
+                                </div>
+                            ) : (
+                                // Form Section
+                                <>
+                                    <h5 className="text-center mb-4">
+                                        Please fill the form. We will get back to you soon!
+                                    </h5>
                                     <form onSubmit={handleSubmit}>
                                         {[
                                             { label: "Name (Required)", name: "name", type: "text", required: true },
@@ -126,8 +132,8 @@ const InterestedLeadsForm = () => {
                                             </button>
                                         </div>
                                     </form>
-                                </div>
-                            </div>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>
