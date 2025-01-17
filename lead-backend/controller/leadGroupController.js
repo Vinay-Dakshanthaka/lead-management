@@ -7,6 +7,7 @@ const LeadGroup = db.LeadGroup;
 const LeadGroupMapping = db.LeadGroupMapping;
 const Lead = db.Lead;
 const Counsellor = db.Counsellor;
+const LeadCounsellor = db.LeadCounsellor;
 
 const createLeadGroup = async (req, res) => {
     try {
@@ -96,6 +97,152 @@ const getLeadsByGroup = async (req, res) => {
         return res.status(500).send({ message: "Failed to retrieve leads by group", error });
     }
 };
+
+const getAllLeads = async (req, res) => {
+    try {
+        const counsellor_id = req.counsellor_id;
+
+        // Fetch the counsellor details from the Counsellor table
+        const counsellor = await Counsellor.findByPk(counsellor_id, {
+            attributes: ['counsellor_id', 'name', 'email', 'phone', 'role'] // Add 'role' field
+        });
+
+        // If the counsellor is not found, return an error message
+        if (!counsellor) {
+            return res.status(404).send({ message: "Counsellor not found" });
+        }
+
+        let leads = [];
+
+        // Check if the counsellor is an ADMIN
+        if (counsellor.role === 'ADMIN') {
+            // Fetch all leads directly from the Lead table
+            const allLeads = await db.Lead.findAll({
+                where: {
+                    counsellor_id: counsellor_id
+                },
+                attributes: ['lead_id', 'name', 'email', 'phone', 'joining_status']
+            });
+
+            leads = allLeads.map(lead => ({
+                lead_id: lead.lead_id,
+                name: lead.name,
+                email: lead.email,
+                phone: lead.phone,
+                joining_status: lead.joining_status
+            }));
+        } else {
+            // Fetch all lead assignments where counsellor_id matches and counsellor is active
+            const leadCounsellorEntries = await LeadCounsellor.findAll({
+                where: {
+                    counsellor_id,
+                    is_active: true // Only fetch leads where the counsellor is active
+                },
+                include: {
+                    model: db.Lead, // Specify the model to include
+                    as: 'Lead', // Alias defined in the association
+                    attributes: ['lead_id', 'name', 'email', 'phone', 'joining_status'] // Specify relevant Lead fields
+                }
+            });
+
+            leads = leadCounsellorEntries.map(entry => ({
+                lead_id: entry.Lead.lead_id,
+                name: entry.Lead.name,
+                email: entry.Lead.email,
+                phone: entry.Lead.phone,
+                joining_status: entry.Lead.joining_status,
+                assigned_date: entry.assigned_date, // LeadCounsellor fields
+                response: entry.response, // LeadCounsellor fields
+                is_interested: entry.is_interested, // LeadCounsellor fields
+                contacted_date: entry.contacted_date, // LeadCounsellor fields
+                next_contact_date: entry.next_contact_date // LeadCounsellor fields
+            }));
+        }
+
+        if (!leads.length) {
+            return res.status(404).send({ message: "No leads found" });
+        }
+
+        return res.status(200).send({
+            message: "Leads retrieved successfully",
+            counsellor: {
+                counsellor_id: counsellor.counsellor_id,
+                name: counsellor.name,
+                email: counsellor.email,
+                phone: counsellor.phone
+            },
+            leads
+        });
+    } catch (error) {
+        console.error("Error retrieving leads and counsellor details:", error);
+        return res.status(500).send({ message: "Failed to retrieve leads and counsellor details", error });
+    }
+};
+
+
+const getLeadsByMultipleGroups = async (req, res) => {
+    try {
+        const { group_ids, group_names } = req.body; // Expecting group_ids or group_names as an array in the request body
+
+        // Validate request
+        if ((!group_ids || group_ids.length === 0) && (!group_names || group_names.length === 0)) {
+            return res.status(400).send({ message: "Either group_ids or group_names must be provided" });
+        }
+
+        // Prepare query conditions
+        const whereClause = group_ids ? { group_id: group_ids } : { group_name: group_names };
+
+        // Fetch groups and their associated leads
+        const groups = await LeadGroup.findAll({
+            where: whereClause,
+            include: [
+                {
+                    model: LeadGroupMapping,
+                    as: 'LeadGroupMappings',
+                    include: [
+                        {
+                            model: Lead,
+                            as: 'Lead',
+                            attributes: ['lead_id', 'name', 'email', 'phone', 'joining_status']
+                        }
+                    ]
+                }
+            ]
+        });
+
+        if (!groups || groups.length === 0) {
+            return res.status(404).send({ message: "No groups found" });
+        }
+
+        // Collect all leads and remove duplicates by phone
+        const leadMap = new Map(); // Map to store unique leads by phone
+
+        groups.forEach(group => {
+            group.LeadGroupMappings.forEach(mapping => {
+                const lead = mapping.Lead;
+                if (lead && !leadMap.has(lead.phone)) {
+                    leadMap.set(lead.phone, lead);
+                }
+            });
+        });
+
+        const uniqueLeads = Array.from(leadMap.values());
+
+        return res.status(200).send({
+            message: "Leads retrieved successfully",
+            groups: groups.map(group => ({
+                group_id: group.group_id,
+                group_name: group.group_name,
+                description: group.description
+            })),
+            leads: uniqueLeads
+        });
+    } catch (error) {
+        console.error("Error retrieving leads by multiple groups:", error);
+        return res.status(500).send({ message: "Failed to retrieve leads by multiple groups", error });
+    }
+};
+
 
 const assignLeadsToGroup = async (req, res) => {
     try {
@@ -418,6 +565,8 @@ const getLeadGroupsByCreator = async (req, res) => {
 module.exports = {
     createLeadGroup,
     getLeadsByGroup,
+    getAllLeads,
+    getLeadsByMultipleGroups,
     assignLeadsToGroup,
     updateLeadGroup,
     deleteLeadGroup,
