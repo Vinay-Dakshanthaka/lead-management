@@ -14,13 +14,15 @@ const LeadDetails = ({ selectedImage, template}) => {
   const [phoneNumber, setPhoneNumber] = useState(''); // New state for phone number
   const [messageSent, setMessageSent] = useState(false); // To track message sent status
   const [hasAttemptedSend, setHasAttemptedSend] = useState(false);
-
+  const [arr,setArr] = useState([]);
   const isBodyPresent = template.components.some(components => components.type === 'BODY');
   let parameterCount = 0;
   let textBody ;
     console.log(template,"-----------template")
   // Fetch groups on component load
-useEffect(() => {
+  // Fetch all groups on component load
+  // Fetching groups and storing group IDs in arr
+  useEffect(() => {
     const fetchGroups = async () => {
       try {
         const token = localStorage.getItem('token');
@@ -31,7 +33,9 @@ useEffect(() => {
         };
 
         const response = await axios.get(`${baseURL}/api/leadGroup/getLeadGroupsByCreator`, config);
-        setGroups(response.data); // Assuming response.data is the array
+        setGroups(response.data); // Assuming response.data is an array of group data
+        setArr(response.data.map((group) => group.group_id)); // Store group IDs in arr
+        console.log(response.data, '--------------------available groups');
       } catch (error) {
         console.error('Error fetching groups:', error);
         toast.error('Failed to fetch groups');
@@ -41,11 +45,9 @@ useEffect(() => {
     fetchGroups();
   }, []);
 
-  // Fetch leads when a group is selected
+  // Fetch leads when a group is selected or when no group is selected (fetch all leads)
   useEffect(() => {
-    const fetchLeadsByGroup = async () => {
-      if (!selectedGroup) return;
-    
+    const fetchLeads = async () => {
       try {
         const token = localStorage.getItem('token');
         const config = {
@@ -53,26 +55,42 @@ useEffect(() => {
             Authorization: `Bearer ${token}`,
           },
         };
-    
-        const response = await axios.get(
-          `${baseURL}/api/leadGroup/getLeadsByGroup`,
-          {
-            params: { group_id: selectedGroup },
-            ...config,
-          }
-        );
-        
-    
-        setLeads(Array.isArray(response.data.leads) ? response.data.leads : []);
+
+        console.log(arr, "---------------------------arr");
+        console.log(selectedGroup, "selectedGroup-----------------------------");
+
+        if (selectedGroup) {
+          // Fetch leads by selected group
+          const response = await axios.get(
+            `${baseURL}/api/leadGroup/getLeadsByGroup`,
+            {
+              params: { group_id: selectedGroup },
+              ...config,
+            }
+          );
+          setLeads(Array.isArray(response.data.leads) ? response.data.leads : []);
+        } else {
+          // Fetch all leads if no group is selected
+          const response = await axios.get(
+            `${baseURL}/api/leadGroup/getLeadsByGroup`,
+            {
+              params: { group_id: arr.join(',') }, // Pass all group IDs as a comma-separated string
+              ...config,
+            }
+          );
+          setLeads(Array.isArray(response.data.leads) ? response.data.leads : []);
+        }
       } catch (error) {
-        console.error('Error fetching leads by group:', error);
-        toast.error('Failed to fetch leads by group');
+        console.error('Error fetching leads:', error);
+        toast.error('Failed to fetch leads');
       }
     };
-    
 
-    fetchLeadsByGroup();
-  }, [selectedGroup]);
+    fetchLeads();
+  }, [selectedGroup, arr]); // Dependency on selectedGroup and arr
+
+
+  
 
   const sendMessage = async (lead) => {
     console.log("Lead details:", lead);
@@ -193,23 +211,20 @@ useEffect(() => {
 
   return (
     <div className="container mt-5">
-           
-            <input
-        type="text"
-        className="form-control"
-        placeholder="Enter phone number"
-        value={phoneNumber}
-        onChange={handlePhoneChange}
-      />
+    <input
+      type="text"
+      className="form-control"
+      placeholder="Enter phone number"
+      value={phoneNumber}
+      onChange={handlePhoneChange}
+    />
+    <button className="btn btn-success mt-3" onClick={handleSendMessage}>
+      Send Message
+    </button>
+    
+    <h3 className="mb-4">Lead Details</h3>
 
-      {/* Send Message Button */}
-      <button className="btn btn-success mt-3" onClick={handleSendMessage}>
-        Send Message
-      </button>    
-      <h3 className="mb-4">Lead Details</h3>
-      
-      {/* Group Filter */}
-      <div className="container">
+    <div className="container">
       <h1 className="mb-4">Select Lead Group</h1>
       <div className="mb-3">
         <select
@@ -217,9 +232,7 @@ useEffect(() => {
           value={selectedGroup || ''}
           onChange={(e) => setSelectedGroup(e.target.value)}
         >
-          <option value="" disabled>
-            Select Group
-          </option>
+          <option value="" disabled>Select Group</option>
           {groups.map((group) => (
             <option key={group.group_id} value={group.group_id}>
               {group.group_name}
@@ -229,82 +242,82 @@ useEffect(() => {
       </div>
     </div>
 
-      <div className="d-flex justify-content-end mb-3">
-        <button
-          className="btn btn-primary"
-          onClick={sendMessagesToSelected}
-          disabled={selectedLeads.length === 0}
-        >
-          Send Message to Selected
-        </button>
-      </div>
-      <div className="table-responsive">
-        <table className="table table-striped table-bordered">
-          <thead className="thead-dark">
-            <tr>
-              <th>
-                <input
-                  type="checkbox"
-                  checked={allSelected}
-                  onChange={handleSelectAll}
-                />
-              </th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Phone</th>
-              <th>Joining Status</th>
-              <th>Actions</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-          {leads.length > 0 ? (
-  leads.map((lead) => {
-    if (!lead) return null; // Skip invalid leads
-    return (
-      <tr key={lead.lead_id}>
-        <td>
-          <input
-            type="checkbox"
-            checked={selectedLeads.includes(lead.lead_id)}
-            onChange={() => handleSelectLead(lead.lead_id)}
-          />
-        </td>
-        <td>{lead.name}</td>
-        <td>{lead.email}</td>
-        <td>{lead.phone}</td>
-        <td>{lead.joining_status ? 'Joined' : 'Not Joined'}</td>
-        <td>
-          <button
-            className="btn btn-sm btn-success"
-            onClick={() => sendMessage(lead)}
-          >
-            Send Message
-          </button>
-        </td>
-        <td>
-          {messageStatus[lead.lead_id] === 'success' && (
-            <span className="text-success">✔️ Sent</span>
-          )}
-          {messageStatus[lead.lead_id] === 'failure' && (
-            <span className="text-danger">❌ Failed</span>
-          )}
-        </td>
-      </tr>
-    );
-  })
-) : (
-  <tr>
-    <td colSpan="7" className="text-center">
-      No leads available
-    </td>
-  </tr>
-)}
-
-          </tbody>
-        </table>
-      </div>
+    <div className="d-flex justify-content-end mb-3">
+      <button
+        className="btn btn-primary"
+        onClick={sendMessagesToSelected}
+        disabled={selectedLeads.length === 0}
+      >
+        Send Message to Selected
+      </button>
     </div>
+
+    <div className="table-responsive">
+      <table className="table table-striped table-bordered">
+        <thead className="thead-dark">
+          <tr>
+            <th>
+              <input
+                type="checkbox"
+                checked={allSelected}
+                onChange={handleSelectAll}
+              />
+            </th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Joining Status</th>
+            <th>Actions</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {leads.length > 0 ? (
+            leads.map((lead) => {
+              if (!lead) return null;
+              return (
+                <tr key={lead.lead_id}>
+                  <td>
+                    <input
+                      type="checkbox"
+                      checked={selectedLeads.includes(lead.lead_id)}
+                      onChange={() => handleSelectLead(lead.lead_id)}
+                    />
+                  </td>
+                  <td>{lead.name}</td>
+                  <td>{lead.email}</td>
+                  <td>{lead.phone}</td>
+                  <td>{lead.joining_status ? 'Joined' : 'Not Joined'}</td>
+                  <td>
+                    <button
+                      className="btn btn-sm btn-success"
+                      onClick={() => sendMessage(lead)}
+                    >
+                      Send Message
+                    </button>
+                  </td>
+                  <td>
+                    {messageStatus[lead.lead_id] === 'success' && (
+                      <span className="text-success">✔️ Sent</span>
+                    )}
+                    {messageStatus[lead.lead_id] === 'failure' && (
+                      <span className="text-danger">❌ Failed</span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })
+          ) : (
+            <tr>
+              <td colSpan="7" className="text-center">
+                No leads available
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  </div>
   );
 };
 
