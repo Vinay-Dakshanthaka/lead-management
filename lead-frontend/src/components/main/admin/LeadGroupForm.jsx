@@ -13,7 +13,7 @@ const CreateLeadGroup = () => {
     const [loading, setLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
-    const leadsPerPage = 10; 
+    const leadsPerPage = 10;
 
     // Fetch leads data
     useEffect(() => {
@@ -55,7 +55,7 @@ const CreateLeadGroup = () => {
                 description,
                 lead_ids: leadIds,
             };
-// console.log("payload :", payload)
+            // console.log("payload :", payload)
             const token = localStorage.getItem("token");
             const config = {
                 headers: {
@@ -172,10 +172,10 @@ const CreateLeadGroup = () => {
                 </div>
 
                 <div className="mb-3">
-                    <label className="form-label">Select Leads</label>
+                    {/* <label className="form-label">Select Leads</label> */}
                     {currentLeads.length > 0 ? (
                         <>
-                            <div className="form-check">
+                            {/* <div className="form-check">
                                 <input
                                     type="checkbox"
                                     className="form-check-input"
@@ -189,11 +189,27 @@ const CreateLeadGroup = () => {
                                 <label htmlFor="selectAll" className="form-check-label">
                                     Select All
                                 </label>
-                            </div>
+                            </div> */}
                             <table className="table table-striped table-bordered">
                                 <thead className="thead-dark">
                                     <tr>
-                                        <th>Select</th>
+                                        <th>
+                                            <div className="form-check">
+                                                <input
+                                                    type="checkbox"
+                                                    className="form-check-input"
+                                                    id="selectAll"
+                                                    checked={
+                                                        leadIds.length > 0 &&
+                                                        leadIds.length === filteredLeads.length
+                                                    }
+                                                    onChange={handleSelectAll}
+                                                />
+                                                <label htmlFor="selectAll" className="form-check-label">
+                                                    Select All
+                                                </label>
+                                            </div>
+                                        </th>
                                         <th>Name</th>
                                         <th>Email</th>
                                         <th>Phone</th>
