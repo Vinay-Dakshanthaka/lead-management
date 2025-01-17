@@ -17,23 +17,24 @@ const whatsappWebhookRoute = require('./routes/whatsappWebhookRoutes')
 const whatsappLeadsRoute = require('./routes/whatsappLeadRoutes')
 const leadGroupRoutes = require('./routes/leadGroupRoutes')
 const leadMessageHistoryRoute = require('./routes/leadMessageHistoryRoutes')
+const interestedLeadsWhatsAppRoute = require('./routes/interestedLeadWhatsAppRoutes')
 const app = express();
 
 
-// const corsOptions = {
-//     // origin: 'https://www.laragrooming.com',
-//     // origin: ['https://leads.paintpulse.in'],
-//     origin: ['https://leads.laragrooming.com'], 
-//     optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
-//   };
+const corsOptions = {
+    // origin: 'https://www.laragrooming.com',
+    // origin: ['https://leads.paintpulse.in'],
+    origin: ['https://leads.laragrooming.com'], 
+    optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+  };
   
-// // Enable CORS 
-// // app.use(cors(corsOptions)); 
+// Enable CORS 
+app.use(cors(corsOptions)); 
 
-app.use(cors({
-    origin: 'http://localhost:5173', // Client URL
-    credentials: true // Allow credentials (cookies) to be sent
-}));
+// app.use(cors({
+//     origin: 'http://localhost:5173', // Client URL
+//     credentials: true // Allow credentials (cookies) to be sent
+// }));
 
 app.use(bodyParser.json());
 app.use(cookieParser()); // Use cookie-parser
@@ -48,6 +49,7 @@ app.use('/api/whatsAppWebhook', whatsappWebhookRoute);
 app.use('/api/whatsappLeads', whatsappLeadsRoute);
 app.use('/api/leadMessageHistory', leadMessageHistoryRoute);
 app.use('/api/leadGroup', leadGroupRoutes);
+app.use('/api/interestedLeadsWhatsApp', interestedLeadsWhatsAppRoute);
 
 
 // const PORT = 3003;

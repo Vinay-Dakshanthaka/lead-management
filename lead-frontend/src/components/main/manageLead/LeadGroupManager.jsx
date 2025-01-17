@@ -3,6 +3,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { baseURL } from "../../config";
 import CreateLeadGroup from "../admin/LeadGroupForm";
+import GroupDetails from "../groups/GroupDetails";
 
 const LeadGroupManager = () => {
   const [groups, setGroups] = useState([]);
@@ -11,7 +12,7 @@ const LeadGroupManager = () => {
   const [loading, setLoading] = useState(false); // Loading state
 
   const [leadGroups, setLeadGroups] = useState([]);
-    const [error, setError] = useState(null);
+  const [error, setError] = useState(null);
 
   // Fetch all groups
   const fetchGroups = async () => {
@@ -25,9 +26,8 @@ const LeadGroupManager = () => {
       };
       const response = await axios.get(`${baseURL}/api/leadGroup/getAllLeadGroups`, config);
       setGroups(response.data.groups || []);
-      console.log(response.data.groups)
     } catch (error) {
-      console.log(error,"----------------")
+      console.log(error, "----------------")
       toast.error(error.response?.data?.message || "Failed to fetch groups.");
     } finally {
       setLoading(false);
@@ -70,162 +70,133 @@ const LeadGroupManager = () => {
   useEffect(() => {
     fetchGroups();
   }, []);
-   
+
   const fetchLeadGroupsByCreator = async () => {
     try {
-        const token = localStorage.getItem("token");
-        console.log(token,"-------------------")
-        const config = {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        };
-        const response = await axios.get(`${baseURL}/api/leadGroup/getLeadGroupsByCreator`, config);
-        return response.data;
+      const token = localStorage.getItem("token");
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      const response = await axios.get(`${baseURL}/api/leadGroup/getLeadGroupsByCreator`, config);
+      return response.data;
     } catch (error) {
-        console.error('Error fetching lead groups:', error);
-        throw error;
+      console.error('Error fetching lead groups:', error);
+      throw error;
     }
-};
+  };
 
-useEffect(() => {
+  useEffect(() => {
     const loadLeadGroups = async () => {
-        try {
-            const groups = await fetchLeadGroupsByCreator();
-            setLeadGroups(groups);
-        } catch (err) {
-            setError(err.message);
-        }
+      try {
+        const groups = await fetchLeadGroupsByCreator();
+        setLeadGroups(groups);
+      } catch (err) {
+        setError(err.message);
+      }
     };
 
     loadLeadGroups();
-}, []);
+  }, []);
 
-if (error) return <p>Error: {error}</p>;
+  if (error) return <p>Error: {error}</p>;
 
-// Show a loading message if `leadGroups` is still null
-if (leadGroups === null) return <p>Loading...</p>;
+  // Show a loading message if `leadGroups` is still null
+  if (leadGroups === null) return <p>Loading...</p>;
 
   return (
     <>
-       <div className="container mt-4">
-  <h2>Lead Groups</h2>
-  <div className="row">
-    {leadGroups.length === 0 ? (
-      <p>No lead groups found.</p>
-    ) : (
-      <ul className="list-group">
-        {leadGroups.map((group) => (
-          <li
-            key={group.group_id}
-            className="list-group-item d-flex justify-content-between align-items-center"
-          >
-            <div>
-              <h3>{group.group_name}</h3>
-              <p className="mb-0">
-                <strong>Description:</strong> {group.description || 'No description available'}
-              </p>
-              <p className="text-muted small mb-0">
-                <strong>Created By:</strong> {group.Creator?.name || 'Unknown'}
-              </p>
-              <p>
-                <strong>Active:</strong> {group.is_active ? 'Yes' : 'No'}
-              </p>
-            </div>
-            <div>
-              <button
-                className="btn btn-primary btn-sm me-2"
-                onClick={() => handleEdit(group)}
-              >
-                Edit
-              </button>
-            </div>
-          </li>
-        ))}
-      </ul>
-    )}
-  </div>
-</div>
-
-    <div className="container mt-4">
-      {/* <h2>Lead Group Manager</h2> */}
-      <div className="row">
-      
-        {/* <div className="col-md-6">
-          <h4>Groups</h4>
-          {loading && <p>Loading groups...</p>}
-          <ul className="list-group">
-            {groups.map((group) => (
-              <li
-                key={group.group_id}
-                className="list-group-item d-flex justify-content-between align-items-center"
-              >
-                <div>
-                  <strong>{group.group_name}</strong>
-                  <p className="mb-0">{group.description}</p>
-                  <p className="text-muted small mb-0">
-                    <strong>Created by:</strong> {group.Creator?.name || "Unknown"}
-                  </p>
-                </div>
-                <div>
-                  <button
-                    className="btn btn-primary btn-sm me-2"
-                    onClick={() => handleEdit(group)}
+      <div className="container my-4">
+        <h2 className="text-center">Lead Groups</h2>
+        <div className="row">
+          {/* Group List */}
+          <div className="col-md-6 mb-4">
+            {leadGroups.length === 0 ? (
+              <p className="text-center">No lead groups found.</p>
+            ) : (
+              <ul className="list-group">
+                {leadGroups.map((group) => (
+                  <li
+                    key={group.group_id}
+                    className="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3"
                   >
-                    Edit
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div> */}
+                    <div className="mb-2 mb-md-0">
+                      <h4>{group.group_name}</h4>
+                      <p className="mb-1">
+                        <strong>Description:</strong> {group.description || "No description available"}
+                      </p>
+                      <p className="text-muted small mb-1">
+                        <strong>Created By:</strong> {group.Creator?.name || "Unknown"}
+                      </p>
+                      <p>
+                        <strong>Active:</strong> {group.is_active ? "Yes" : "No"}
+                      </p>
+                    </div>
+                    <div>
+                      <button
+                        className="btn btn-primary btn-sm"
+                        onClick={() => handleEdit(group)}
+                      >
+                        Edit
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
 
-     
-        <div className="col-md-6">
-          <h4>Edit Group</h4>
-          <form onSubmit={handleSubmit}>
-            <div className="mb-3">
-              <label htmlFor="group_name" className="form-label">
-                Group Name
-              </label>
-              <input
-                type="text"
-                className="form-control"
-                id="group_name"
-                name="group_name"
-                value={formData.group_name}
-                onChange={handleChange}
-                required
-                disabled={true} // Always disabled
-              />
-            </div>
-            <div className="mb-3">
-              <label htmlFor="description" className="form-label">
-                Description
-              </label>
-              <textarea
-                className="form-control"
-                id="description"
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                required
-                disabled={!selectedGroup} // Disabled until a group is selected
-              />
-            </div>
-            <button
-              type="submit"
-              className="btn btn-success"
-              disabled={!selectedGroup || loading} // Disabled if no group selected or loading
-            >
-              {loading ? "Updating..." : "Update Group Details"}
-            </button>
-          </form>
+          {/* Edit Group Form */}
+          <div className="col-md-6">
+            <h4>Edit Group</h4>
+            <form onSubmit={handleSubmit} className="shadow-sm p-4 bg-white rounded">
+              <div className="mb-3">
+                <label htmlFor="group_name" className="form-label">
+                  Group Name
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  id="group_name"
+                  name="group_name"
+                  value={formData.group_name}
+                  onChange={handleChange}
+                  required
+                  disabled={true} // Always disabled
+                />
+              </div>
+              <div className="mb-3">
+                <label htmlFor="description" className="form-label">
+                  Description
+                </label>
+                <textarea
+                  className="form-control"
+                  id="description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  required
+                  disabled={!selectedGroup} // Disabled until a group is selected
+                />
+              </div>
+              <button
+                type="submit"
+                className="btn btn-success w-100"
+                disabled={!selectedGroup || loading} // Disabled if no group selected or loading
+              >
+                {loading ? "Updating..." : "Update Group Details"}
+              </button>
+            </form>
+          </div>
         </div>
+        <div className="mt-4">
+          <CreateLeadGroup />
+        </div>
+        <GroupDetails />
       </div>
-      <CreateLeadGroup />
-    </div>
     </>
+
   );
 };
 

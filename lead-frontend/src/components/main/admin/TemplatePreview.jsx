@@ -14,60 +14,82 @@ const TemplatePreview = ({ template, image }) => {
     const buttonComponent = components.find(comp => comp.type === 'BUTTONS');
 
     return (
+        <div className="col-lg-12 col-md-12 mb-4" key={template.id}>
         <div className="card border-success mb-3" style={{ maxWidth: '400px', margin: '0' }}>
-            <div className="card-header bg-success text-white">
-                <h5 className="mb-0">{template.name}</h5>
-            </div>
-            <div className="card-body bg-light">
-                {/* Header Section */}
-                {headerComponent && headerComponent.format === 'IMAGE' && (
-                    <div className="mb-3">
-                        <img
-                            src={image}
-                            alt="Header"
-                            className="img-fluid rounded"
-                            style={{ maxHeight: '200px', objectFit: 'cover' }}
-                        />
-                    </div>
-                )}
-
-                {/* Body Section */}
-                {bodyComponent && (
-                    <p className="card-text" style={{ whiteSpace: 'pre-line' }}>
-                        {bodyComponent.text}
+          <div className="card-header bg-success text-white">
+            <h5 className="mb-0">{template.name}</h5>
+          </div>
+          <div className="card-body bg-light">
+            {/* Header Section */}
+            {template.components.find((component) => component.type === "HEADER" && component.format === "IMAGE") && (
+              <div className="mb-3">
+                {template.components
+                  .filter((component) => component.type === "HEADER" && component.format === "IMAGE")
+                  .map((header, index) => (
+                    <img
+                      key={index}
+                      src={image ? image : header.example.header_handle[0]}
+                      alt="Header"
+                      className="img-fluid rounded"
+                      style={{ maxHeight: '200px', objectFit: 'cover' }}
+                    />
+                  ))}
+              </div>
+            )}
+    
+            {/* Body Section */}
+            {template.components.find((component) => component.type === "BODY") && (
+              <div className="mb-3">
+                {template.components
+                  .filter((component) => component.type === "BODY")
+                  .map((body, index) => (
+                    <p key={index} className="card-text" style={{ whiteSpace: 'pre-line' }}>
+                      {body.text}
                     </p>
-                )}
-
-                {/* Footer Section */}
-                {footerComponent && (
-                    <div className="text-muted">
-                        <small>{footerComponent.text}</small>
+                  ))}
+              </div>
+            )}
+    
+            {/* Footer Section */}
+            {template.components.find((component) => component.type === "FOOTER") && (
+              <div className="text-muted">
+                {template.components
+                  .filter((component) => component.type === "FOOTER")
+                  .map((footer, index) => (
+                    <small key={index}>{footer.text}</small>
+                  ))}
+              </div>
+            )}
+    
+            {/* Buttons Section */}
+            {template.components.find((component) => component.type === "BUTTONS") && (
+              <div className="mt-3">
+                {template.components
+                  .filter((component) => component.type === "BUTTONS")
+                  .map((buttonGroup, index) => (
+                    <div key={index} className="d-grid gap-2">
+                      {buttonGroup.buttons.map((button, btnIdx) => (
+                        button.type === "QUICK_REPLY" ? (
+                          <button key={btnIdx} className="btn btn-outline-success btn-sm">{button.text}</button>
+                        ) : button.type === "URL" ? (
+                          <a
+                            key={btnIdx}
+                            href={button.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn btn-outline-primary btn-sm"
+                          >
+                            {button.text}
+                          </a>
+                        ) : null
+                      ))}
                     </div>
-                )}
-
-                {/* Buttons Section */}
-                {buttonComponent && buttonComponent.buttons && (
-                    <div className="mt-3">
-                        {buttonComponent.buttons.map((button, idx) => (
-                            <div key={idx} className="d-grid gap-2">
-                                {button.type === 'QUICK_REPLY' ? (
-                                    <button className="btn btn-outline-success btn-sm">{button.text}</button>
-                                ) : button.type === 'URL' ? (
-                                    <a
-                                        href={button.url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="btn btn-outline-primary btn-sm"
-                                    >
-                                        {button.text}
-                                    </a>
-                                ) : null}
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </div>
+                  ))}
+              </div>
+            )}
+          </div>
         </div>
+      </div>
     );
 };
 

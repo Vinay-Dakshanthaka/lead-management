@@ -3,6 +3,7 @@ import axios from 'axios';
 import { baseURL } from '../../config';
 import LeadDetails from './LeadDetails';
 import TemplatePreview from './TemplatePreview';
+import { Alert } from 'react-bootstrap';
 
 const TemplateDetails = ({ template, onBack }) => {
   const [images, setImages] = useState([]);
@@ -52,7 +53,7 @@ const TemplateDetails = ({ template, onBack }) => {
       <button className="btn btn-secondary mb-4" onClick={onBack}>
         Back to Templates
       </button>
-
+      <Alert variant='warning'>For any phone number 2 templates can be sent per day </Alert>
       <h3 className="mb-4">{template.name} - Uploaded Images</h3>
       {loading && <div className="text-center">Loading...</div>}
       {error && <div className="alert alert-danger text-center">{error}</div>}

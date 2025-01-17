@@ -94,6 +94,7 @@ import WhatsAppLeadsTable from './whatsAppLeads/WhatsAppLeadsTable';
 import LeadGroupManager from './manageLead/LeadGroupManager';
 import SaveAdminConfig from './admin/SaveAdminConfig';
 import AdminSignUpForm from './auth/AdminSignUpForm';
+import InterestedLeadsForm from './whatsAppLeads/InterestedLeadsForm';
 
 const Main = ({ role, isLoggedIn, passwordUpdated }) => {
   return (
@@ -248,6 +249,7 @@ const Main = ({ role, isLoggedIn, passwordUpdated }) => {
         <Route path="/sign-in" element={<SignInForm />} />
         <Route path="/forgot-password" element={<ResetPasswordEmail />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/interested-leads" element={<InterestedLeadsForm />} />
         <Route path="/" element={<SignInForm />} />
 
         {/* Catch-All 404 Route */}

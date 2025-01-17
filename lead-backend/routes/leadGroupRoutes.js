@@ -10,6 +10,10 @@ leadGroupRoutes.post('/createLeadGroup', authenticateToken, leadGroupController.
 
 leadGroupRoutes.get('/getLeadsByGroup', leadGroupController.getLeadsByGroup);
 
+leadGroupRoutes.get('/getAllLeads',authenticateToken ,leadGroupController.getAllLeads);
+
+leadGroupRoutes.get('/getLeadsByMultipleGroups', leadGroupController.getLeadsByMultipleGroups);
+
 leadGroupRoutes.post('/assignLeadsToGroup', leadGroupController.assignLeadsToGroup);
 
 leadGroupRoutes.put('/updateLeadGroup', leadGroupController.updateLeadGroup);
