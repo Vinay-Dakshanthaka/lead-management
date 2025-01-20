@@ -938,7 +938,71 @@ const getJoinedLeadData = async (req, res) => {
     }
 };
 
+const getLeadsByCounsellorId = async (req, res) => {
+    try {
+        const  counsellor_id  = req.counsellor_id;
 
+        // Validate counsellor_id
+        if (!counsellor_id) {
+            return res.status(400).json({ error: "Counsellor ID is required" });
+        }
+
+        // Fetch leads associated with the given counsellor_id
+        const leads = await Lead.findAll({
+            where: { counsellor_id },
+            attributes: ['lead_id', 'name', 'email', 'phone', 'joining_status'], // Include desired columns
+        });
+
+        // Check if leads exist
+        if (!leads.length) {
+            return res.status(404).json({ message: "No leads found for the given Counsellor ID" });
+        }
+
+        // Respond with the lead details
+        return res.status(200).json({ success: true, leads });
+    } catch (error) {
+        console.error("Error fetching leads:", error);
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+
+
+
+const addLeadsToGroup = async (req, res) => {
+    const { lead_ids, group_id } = req.body;  
+
+    if (!Array.isArray(lead_ids) || lead_ids.length === 0 || !group_id) {
+      return res.status(400).json({ message: 'Invalid input. Please provide lead_ids and group_id.' });
+    }
+  
+    try {
+ 
+      for (let lead_id of lead_ids) {
+       
+        const existingMapping = await db.LeadGroupMapping.findOne({
+          where: { lead_id, group_id }
+        });
+  
+        if (existingMapping) {
+        
+          console.log(`Lead ID ${lead_id} is already assigned to Group ID ${group_id}. Skipping.`);
+        } else {
+         
+          await db.LeadGroupMapping.create({
+            lead_id,
+            group_id
+          });
+          console.log(`Lead ID ${lead_id} added to Group ID ${group_id}.`);
+        }
+      }
+  
+      res.status(200).json({ message: 'Leads processed successfully.' });
+    } catch (err) {
+      console.error('Error adding leads to group:', err);
+      res.status(500).json({ message: 'Error adding leads to the group. Please try again later.' });
+    }
+  };
 
 module.exports = {
     saveLeadData,
@@ -950,4 +1014,6 @@ module.exports = {
     getLeadDataById,
     getJoinedLeadData,
     getLeadDetails,
+    getLeadsByCounsellorId,
+    addLeadsToGroup
 }

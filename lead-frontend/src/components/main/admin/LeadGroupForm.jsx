@@ -50,6 +50,7 @@ const CreateLeadGroup = () => {
         setLoading(true);
 
         try {
+            
             const payload = {
                 group_name: groupName,
                 description,

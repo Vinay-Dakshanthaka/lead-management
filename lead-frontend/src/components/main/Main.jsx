@@ -95,6 +95,7 @@ import LeadGroupManager from './manageLead/LeadGroupManager';
 import SaveAdminConfig from './admin/SaveAdminConfig';
 import AdminSignUpForm from './auth/AdminSignUpForm';
 import InterestedLeadsForm from './whatsAppLeads/InterestedLeadsForm';
+import ViewLeadsByGroup from './manageLead/ViewLeadsByGroup';
 
 const Main = ({ role, isLoggedIn, passwordUpdated }) => {
   return (
@@ -109,6 +110,7 @@ const Main = ({ role, isLoggedIn, passwordUpdated }) => {
         <Route path="/lead-form" element={
           <WhatsAppLeadForm />
         } />
+        <Route path="/viewleadsbygroup" element={<ViewLeadsByGroup />} />
         <Route path="/reports" element={
           <ProtectedRoute isLoggedIn={isLoggedIn} passwordUpdated={passwordUpdated}>
             <Reports />

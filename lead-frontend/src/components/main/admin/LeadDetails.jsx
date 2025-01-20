@@ -104,6 +104,7 @@ const LeadDetails = ({ selectedImage, template }) => {
             ...config,
           }
         );
+        console.log(response.data,"-----------------------getleadsbygroups....")
         setLeads(Array.isArray(response.data.leads) ? response.data.leads : []);
       } catch (error) {
         console.error('Error fetching leads:', error);

@@ -23,5 +23,7 @@ leadRoutes.get('/get-lead-data-by-id/:lead_id', leadController.getLeadDataById);
 // leadRoutes.post('/update-lead-data/:lead_id', leadController.updateLeadData);
 
 leadRoutes.get('/joined-leads', leadController.getJoinedLeadData);
+leadRoutes.get('/getLeadsByCounsellorId', authenticateToken,leadController.getLeadsByCounsellorId);
+leadRoutes.post('/addtothegroup', authenticateToken,leadController.addLeadsToGroup);
 
 module.exports = leadRoutes;

@@ -73,9 +73,9 @@ const CounsellorLeads = () => {
               </tr>
             </thead>
             <tbody>
-              {paginatedLeads.map((lead) => (
+              {paginatedLeads.map((lead,index) => (
                 <tr key={lead.lead_id}>
-                  <td>{lead.lead_id}</td>
+                  <td>{index +1}</td>
                   <td>{lead.lead_name}</td>
                   <td>{lead.lead_email}</td>
                   <td>{lead.lead_phone}</td>

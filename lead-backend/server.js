@@ -29,12 +29,12 @@ const corsOptions = {
   };
   
 // Enable CORS 
-app.use(cors(corsOptions)); 
+// app.use(cors(corsOptions)); 
 
-// app.use(cors({
-//     origin: 'http://localhost:5173', // Client URL
-//     credentials: true // Allow credentials (cookies) to be sent
-// }));
+app.use(cors({
+    origin: 'http://localhost:5173', // Client URL
+    credentials: true // Allow credentials (cookies) to be sent
+}));
 
 app.use(bodyParser.json());
 app.use(cookieParser()); // Use cookie-parser

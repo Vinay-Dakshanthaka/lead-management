@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import { baseURL } from "../../config";
 import CreateLeadGroup from "../admin/LeadGroupForm";
 import GroupDetails from "../groups/GroupDetails";
+import { useNavigate, Navigate  } from "react-router-dom"; // Import the hook
 
 const LeadGroupManager = () => {
   const [groups, setGroups] = useState([]);
@@ -13,7 +14,7 @@ const LeadGroupManager = () => {
 
   const [leadGroups, setLeadGroups] = useState([]);
   const [error, setError] = useState(null);
-
+  const navigate = useNavigate(); // Initialize the hook
   // Fetch all groups
   const fetchGroups = async () => {
     try {
@@ -80,6 +81,7 @@ const LeadGroupManager = () => {
         },
       };
       const response = await axios.get(`${baseURL}/api/leadGroup/getLeadGroupsByCreator`, config);
+      console.log(response.data,"---------------------------------creator")
       return response.data;
     } catch (error) {
       console.error('Error fetching lead groups:', error);
@@ -105,6 +107,11 @@ const LeadGroupManager = () => {
   // Show a loading message if `leadGroups` is still null
   if (leadGroups === null) return <p>Loading...</p>;
 
+  const handleViewLeads = async (group) => {
+  console.log(group,"-------------------------group");
+  navigate("/viewleadsbygroup",{ state: { group } }); // Use navigate as a function
+  };
+  
   return (
     <>
       <div className="container my-4">
@@ -140,6 +147,13 @@ const LeadGroupManager = () => {
                       >
                         Edit
                       </button>
+                      <button
+                        className="btn btn-info btn-sm"
+                        onClick={() => handleViewLeads(group)}
+                      >
+                        View Leads
+                      </button>
+
                     </div>
                   </li>
                 ))}
