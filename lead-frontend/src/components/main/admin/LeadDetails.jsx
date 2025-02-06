@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { baseURL } from '../../config';
 import toast from 'react-hot-toast';
+import SendMessageForm from './SendMessageForm';
 
 const LeadDetails = ({ selectedImage, template }) => {
   const [groups, setGroups] = useState([]);
@@ -198,7 +199,7 @@ const LeadDetails = ({ selectedImage, template }) => {
     if (phoneNumber) {
       try {
         const to = phoneNumber;
-        const lead = { phone: to, name: "Custom Lead" };
+        const lead = { phone: to, name: "Lead" };
 
         await sendMessage(lead);
         setMessageSent(true);
@@ -214,18 +215,19 @@ const LeadDetails = ({ selectedImage, template }) => {
   return (
     <div className="container mt-5">
 
-      <input
+      {/* <input
         type="text"
         className="form-control"
         placeholder="Enter phone number"
         value={phoneNumber}
         onChange={handlePhoneChange}
       />
-      {/* Send Message Button */}
       <button className="btn btn-success mt-3" onClick={handleSendMessage}>
         Send Message
-      </button>
-      <h3 className="mb-4">Lead Details</h3>
+      </button> */}
+
+      <SendMessageForm template={template} selectedImage={selectedImage}/>
+      <h3 className="my-4">Lead Details</h3>
       {/* Group Filter */}
        {/* Radio Buttons */}
        <div className="mb-3">

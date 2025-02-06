@@ -95,6 +95,7 @@ import LeadGroupManager from './manageLead/LeadGroupManager';
 import SaveAdminConfig from './admin/SaveAdminConfig';
 import AdminSignUpForm from './auth/AdminSignUpForm';
 import InterestedLeadsForm from './whatsAppLeads/InterestedLeadsForm';
+import BulkEmailSender from './emailSender/BulkEmailSender';
 
 const Main = ({ role, isLoggedIn, passwordUpdated }) => {
   return (
@@ -219,6 +220,11 @@ const Main = ({ role, isLoggedIn, passwordUpdated }) => {
                 <LeadGroupManager />
               </ProtectedRoute>
             } />
+            <Route path="/email" element={
+              <ProtectedRoute isLoggedIn={isLoggedIn} passwordUpdated={passwordUpdated}>
+                <BulkEmailSender />
+              </ProtectedRoute>
+            } />
           </>
         )}
 
@@ -238,6 +244,11 @@ const Main = ({ role, isLoggedIn, passwordUpdated }) => {
             <Route path="/group-management" element={
               <ProtectedRoute isLoggedIn={isLoggedIn} passwordUpdated={passwordUpdated}>
                 <LeadGroupManager />
+              </ProtectedRoute>
+            } />
+            <Route path="/email" element={
+              <ProtectedRoute isLoggedIn={isLoggedIn} passwordUpdated={passwordUpdated}>
+                <BulkEmailSender />
               </ProtectedRoute>
             } />
           </>

@@ -1216,6 +1216,9 @@ const sendMediaTemplate = async (req, res) => {
           parameterCount 
       } = req.body;
 
+      console.log('To :::>>>', to);
+      console.log("Req body data ::: ", req.body)
+
     //   console.log(req.body, "---------------------------------------");
 
       const userId = req.counsellor_id;

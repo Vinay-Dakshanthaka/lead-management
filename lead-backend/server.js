@@ -18,6 +18,7 @@ const whatsappLeadsRoute = require('./routes/whatsappLeadRoutes')
 const leadGroupRoutes = require('./routes/leadGroupRoutes')
 const leadMessageHistoryRoute = require('./routes/leadMessageHistoryRoutes')
 const interestedLeadsWhatsAppRoute = require('./routes/interestedLeadWhatsAppRoutes')
+const emailRoute = require('./routes/sendEmailRoutes')
 const app = express();
 
 
@@ -50,6 +51,7 @@ app.use('/api/whatsappLeads', whatsappLeadsRoute);
 app.use('/api/leadMessageHistory', leadMessageHistoryRoute);
 app.use('/api/leadGroup', leadGroupRoutes);
 app.use('/api/interestedLeadsWhatsApp', interestedLeadsWhatsAppRoute);
+app.use('/api/email', emailRoute);
 
 
 // const PORT = 3003;

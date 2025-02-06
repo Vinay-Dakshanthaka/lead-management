@@ -10,6 +10,7 @@ const CounsellorNavbar = () => {
       <Nav.Link as={Link} to="/joined-leads">Joined Leads</Nav.Link>
       <Nav.Link as={Link} to="/create-template">Templates</Nav.Link>
       <Nav.Link as={Link} to="/group-management">Lead Groups</Nav.Link>
+      <Nav.Link as={Link} to="/email">Email</Nav.Link>
 
       {/* <Nav.Link as={Link} to="/lead-form/:lead_id">Joined Leads</Nav.Link> */}
     </>

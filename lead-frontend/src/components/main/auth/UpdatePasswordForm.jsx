@@ -4,6 +4,8 @@ import { Form, Button, Container, Row, Col, Alert, Spinner } from 'react-bootstr
 import { toast } from 'react-hot-toast';
 import { baseURL } from '../../config';
 import { Link, useNavigate } from 'react-router-dom';
+import BulkEmailUpload from '../BulkMailer/BulkEmailUpload';
+import MailSender from '../BulkMailer/MailSender';
 
 const UpdatePasswordForm = () => {
   const [originalPassword, setOriginalPassword] = useState('');
@@ -122,6 +124,8 @@ const UpdatePasswordForm = () => {
           </Form>
         </Col>
       </Row>
+      {/* <BulkEmailUpload />
+      <MailSender/> */}
     </Container>
   );
 };
