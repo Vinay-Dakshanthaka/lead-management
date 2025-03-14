@@ -44,6 +44,7 @@ db.AdminConfig = require('./AdminConfigModel.js')(sequelize, DataTypes);
 
 db.MessageStatus = require('./messageStatusModel.js')(sequelize, DataTypes);
 db.InterestedLeadsWhatsApp = require('./InterestedLeadsWhatsApp.js')(sequelize, DataTypes);
+db.EmailStatus = require('./emailStatusModel.js')(sequelize, DataTypes);
 
 // Define many-to-many association
 // Define associations in index.js or separate model files

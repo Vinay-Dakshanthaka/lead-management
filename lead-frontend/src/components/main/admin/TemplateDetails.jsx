@@ -104,14 +104,14 @@ const TemplateDetails = ({ template, onBack }) => {
 
       {/* Display the selected image and preview */}
       <div className="row mt-5">
-        <div className="col-md-6">
-          <LeadDetails selectedImage={selectedImage} template={template} />
-        </div>
-        <div className="col-md-6">
+        <div className="col-md-12">
           <div className="preview-section border rounded bg-light">
             <h5>Template Preview</h5>
             <TemplatePreview template={template} image={selectedImage} />
           </div>
+        </div>
+        <div className="col-md-12">
+          <LeadDetails selectedImage={selectedImage} template={template} />
         </div>
       </div>
     </div>

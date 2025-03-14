@@ -1,0 +1,6 @@
+https://www.programmingcube.com/how-to-make-your-own-mailing-services-like-gmail/
+
+
+
+https://www.linuxbabe.com/mail-server/setup-basic-postfix-mail-sever-ubuntu
+

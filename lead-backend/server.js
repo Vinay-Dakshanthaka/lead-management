@@ -18,17 +18,18 @@ const whatsappLeadsRoute = require('./routes/whatsappLeadRoutes')
 const leadGroupRoutes = require('./routes/leadGroupRoutes')
 const leadMessageHistoryRoute = require('./routes/leadMessageHistoryRoutes')
 const interestedLeadsWhatsAppRoute = require('./routes/interestedLeadWhatsAppRoutes')
+const emailRoute = require('./routes/sendEmailRoutes')
 const app = express();
 
 
-const corsOptions = {
-    // origin: 'https://www.laragrooming.com',
-    // origin: ['https://leads.paintpulse.in'],
-    origin: ['https://leads.laragrooming.com'], 
-    optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
-  };
+// const corsOptions = {
+//     // origin: 'https://www.laragrooming.com',
+//     // origin: ['https://leads.paintpulse.in'],
+//     origin: ['https://leads.laragrooming.com'], 
+//     optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+//   };
   
-// Enable CORS 
+// // Enable CORS 
 // app.use(cors(corsOptions)); 
 
 app.use(cors({
@@ -50,6 +51,7 @@ app.use('/api/whatsappLeads', whatsappLeadsRoute);
 app.use('/api/leadMessageHistory', leadMessageHistoryRoute);
 app.use('/api/leadGroup', leadGroupRoutes);
 app.use('/api/interestedLeadsWhatsApp', interestedLeadsWhatsAppRoute);
+app.use('/api/email', emailRoute);
 
 
 // const PORT = 3003;
