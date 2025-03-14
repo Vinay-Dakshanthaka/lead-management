@@ -57,7 +57,7 @@ export const sendBulkEmailsIndividually = async (formData) => {
         });
         return response;
     } catch (error) {
-        console.log(error)
+        console.log("erroro: :",error)
         console.error("Error sending bulk emails:", error.message);
         throw new Error(error.response?.data?.message || "Failed to start email-sending process");
     }

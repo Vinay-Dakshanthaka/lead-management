@@ -34,7 +34,6 @@ const EmailForm = ({ onSubmit, isSending }) => {
             to: "", // Reset 'To' field when Excel is uploaded
         }));
     };
-
     const handleToFieldChange = (e) => {
         setFormData((prev) => ({
             ...prev,
@@ -42,9 +41,11 @@ const EmailForm = ({ onSubmit, isSending }) => {
             excelFile: null, // Reset Excel when 'To' is entered
         }));
     };
-
+    
     const handleSubmit = (e) => {
         e.preventDefault();
+    
+        // Ensure the 'to' field is populated or an Excel file is uploaded
         if (!formData.from || (!formData.to && !formData.excelFile) || !formData.subject || !formData.text) {
             alert("Please fill in all fields or upload an Excel file.");
             return;
@@ -55,15 +56,27 @@ const EmailForm = ({ onSubmit, isSending }) => {
         data.append("subject", formData.subject);
         data.append("text", formData.text);
     
+        // If an Excel file is uploaded, append it to the form data
         if (formData.excelFile) {
             data.append("files", formData.excelFile);
         }
+        // Attach other files (including attachments)
         formData.files.forEach((file) => data.append("files", file));
     
+        // Check if 'to' field is filled out
+        if (formData.to) {
+            // Split the 'to' field by commas and remove any extra spaces
+            const emails = formData.to.split(",").map(email => email.trim());
+    
+            // Create a new FormData entry for the emails
+            data.append("to", JSON.stringify(emails)); // Send 'to' as an array of emails
+        }
+    
+        // Pass data to the onSubmit function
         onSubmit(data, formData.excelFile ? "excel" : "manual");
     };
     
-
+    
     const { getRootProps, getInputProps } = useDropzone({
         onDrop: handleFileChange,
         accept: ".pdf,.png,.jpg,.jpeg,.docx,.xls,.xlsx,.txt",
@@ -164,3 +177,4 @@ const EmailForm = ({ onSubmit, isSending }) => {
 };
 
 export default EmailForm;
+            

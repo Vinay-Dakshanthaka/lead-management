@@ -83,7 +83,7 @@ const BulkEmailSender = () => {
             if (failedEmails.length > 0) {
                 toast.error("Some emails failed to send.");
             } else {
-                toast.success("Emails sent successfully!");
+                toast.success("Emails are sending in the background!");
             }
         } catch (error) {
             toast.error("An error occurred while sending emails.");
@@ -98,7 +98,7 @@ const BulkEmailSender = () => {
             <h2 className="text-center">Send Bulk Emails</h2>
             {isSending && <p className="text-center">Progress: {progress}%</p>}
             <EmailForm onSubmit={handleSendEmails} isSending={isSending} />
-            <StatusList statusList={statusList} />
+            {/* <StatusList statusList={statusList} /> */}
         </div>
     );
 };

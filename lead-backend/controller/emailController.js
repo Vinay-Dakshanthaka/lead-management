@@ -10,28 +10,54 @@ const { v4: uuidv4 } = require("uuid");
 // const emailQueue = new Queue("emailQueue");
 
 const EmailStatus = db.EmailStatus;
+let transporter;
 
+function createTransporter(senderEmail) {
+   
 
-let transporter = nodemailer.createTransport({
-    host: "mail.totfd.fun", // Replace with your Mailcow SMTP server
-    port: 587, // STARTTLS port
-    secure: false, // false for STARTTLS (only true for port 465)
-    auth: {
-      user: "info@totfd.fun",
-      pass: "Vinay@4499"
-    },
-    tls: {
-        rejectUnauthorized: false // (Optional) Use if you have SSL certificate issues
-    }
-});
-
-transporter.verify((error, success) => {
-    if (error) {
-        console.error("Email transporter configuration error:", error);
+    // Check which sender email and configure accordingly
+    if (senderEmail === "info@totfd.fun") {
+        transporter = {
+            host: "mail.totfd.fun",
+            port: 587,
+            secure: false, // false for STARTTLS (only true for port 465)
+            auth: {
+                user: "info@totfd.fun",
+                pass: "Vinay@4499" // password for info@totfd.fun
+            },
+            tls: {
+                rejectUnauthorized: false // Optional (use if you have SSL certificate issues)
+            }
+        };
+    } else if (senderEmail === "info@totfd.in") {
+        transporter = {
+            host: "mail.totfd.fun", // Same host for both, only different credentials
+            port: 587,
+            secure: false, // false for STARTTLS (only true for port 465)
+            auth: {
+                user: "info@totfd.in",
+                pass: "Vinay@4499" // password for info@totfd.in
+            },
+            tls: {
+                rejectUnauthorized: false // Optional (use if you have SSL certificate issues)
+            }
+        };
     } else {
-        console.log("Email transporter is ready to send messages!");
+        throw new Error("Unsupported sender email.");
     }
-});
+
+    return nodemailer.createTransport(transporter);
+}
+
+
+
+// transporter.verify((error, success) => {
+//     if (error) {
+//         console.error("Email transporter configuration error:", error);
+//     } else {
+//         console.log("Email transporter is ready to send messages!");
+//     }
+// });
 
 // Function to send an email
 const sendTestEmail = async (req, res) => {
@@ -84,7 +110,7 @@ const sendBulkEmails = async (req, res) => {
 
         // Function to validate email format
         const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
+        console.log("email : , :, ",email);
         // Track success count
         let successCount = 0;
 
@@ -93,7 +119,7 @@ const sendBulkEmails = async (req, res) => {
             if (!isValidEmail(email)) {
                 console.warn(`Skipping invalid email: ${email}`);
                 failedEmails.push({ email, error: "Invalid email format" });
-                continue; // Move to the next email
+                continue; 
             }
 
             try {
@@ -110,6 +136,7 @@ const sendBulkEmails = async (req, res) => {
                 await transporter.sendMail(mailOptions);
                 successCount++; // Increment success count
             } catch (error) {
+                console.log("Error sending mails in sendBulkEmails : ", error)
                 console.error(`Error sending email to ${email}:`, error.message);
                 failedEmails.push({ email, error: error.message });
             }
@@ -135,12 +162,14 @@ const sendBulkEmails = async (req, res) => {
 };
 
 const sendBulkEmailsIndividually = async (req, res) => {
-    const failedEmails = []; // Store failed email addresses
+    const failedEmails = [];
     let successCount = 0;
 
     try {
         const { from, to, subject, text } = req.body;
-        const files = req.files || []; // Get uploaded files
+        const files = req.files || [];
+
+        console.log("Received fields ", from, " : ", to, " : ", subject, " : ", text);
 
         if (!from || !to || !subject || !text) {
             return res.status(400).json({ message: "Missing required fields" });
@@ -166,38 +195,45 @@ const sendBulkEmailsIndividually = async (req, res) => {
                 continue;
             }
 
+            // Check if the sender email matches allowed options and configure dynamically
+            if (from !== "info@totfd.fun" && from !== "info@totfd.in") {
+                failedEmails.push({ email, error: "Unsupported sender email" });
+                continue; // Skip unsupported sender
+            }
+
             try {
-                // Define email options
+                const transporter = createTransporter(from); // Dynamically configure the transporter
+
                 const mailOptions = {
-                    from,
-                    to: email, // Send individually
+                    from, // Use the 'from' email received in the body
+                    to: email,
                     subject,
                     text,
                     attachments,
                 };
 
-                // Send the email
                 await transporter.sendMail(mailOptions);
                 successCount++;
+                console.log("Mail sent successfully from:", from, "to:", email);
             } catch (error) {
-                console.log(error)
+                console.log("Error sending mail:", error);
                 console.error(`Error sending email to ${email}:`, error.message);
                 failedEmails.push({ email, error: error.message });
             }
         }
 
-        // Delete temporary files after sending emails
+        // Clean up temp files after emails are sent
         for (const file of attachments) {
             fs.unlink(file.path, (err) => {
                 if (err) console.error("Failed to delete temp file:", err);
             });
         }
 
-        // Return response with success and failure details
         return res.status(200).json({
             message: `${successCount} emails sent successfully.`,
             failedEmails,
         });
+
     } catch (error) {
         console.error("Error in bulk email sending:", error);
         return res.status(500).json({ message: "Failed to send emails", error: error.message });
@@ -352,11 +388,81 @@ const sendBulkEmailsFromExcel = async (req, res) => {
     }
 };
 
+const sendEmailsIndividually = async (req, res) => {
+    try {
+        const { from, subject, text, to } = req.body;
+        const files = req.files || [];
+
+        // Validate required fields
+        if (!from || !subject || !text || !to || !Array.isArray(to) || to.length === 0) {
+            return res.status(400).json({ message: "Missing required fields or invalid email list." });
+        }
+
+        // Function to validate email format
+        const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        
+        // Filter out invalid emails from the recipient list
+        const recipientList = to.filter((email) => isValidEmail(email));
+
+        if (recipientList.length === 0) {
+            return res.status(400).json({ message: "No valid emails found in the provided list." });
+        }
+
+        // Prepare attachments if any
+        const attachments = files.map((file) => ({ filename: file.originalname, path: file.path }));
+
+        // Generate a unique task ID for tracking
+        const taskId = uuidv4();
+
+        // Store the email task status in the queue (initially as IN_PROGRESS)
+        emailQueue[taskId] = {
+            totalEmails: recipientList.length,
+            sentEmails: 0,
+            failedEmails: 0,
+            status: "IN_PROGRESS",
+        };
+
+        // Log the initial status of each email as PENDING in the database or system
+        for (const email of recipientList) {
+            await EmailStatus.create({ email, subject, status: "PENDING", taskId });
+        }
+
+        // Start email processing asynchronously
+        processEmails(taskId, recipientList, from, subject, text, attachments);
+
+        // Clean up temporary attachment files
+        await Promise.all(attachments.map((file) => fs.promises.unlink(file.path)));
+
+        // Return a response with the task ID and a message that emails are being sent
+        return res.status(202).json({
+            message: "Emails are being sent in the background.",
+            taskId,
+        });
+    } catch (error) {
+        console.error("Error sending emails individually:", error);
+        return res.status(500).json({ message: "Internal server error.", error: error.message });
+    }
+};
+
+
 // Process Emails in Chunks
 const processEmails = async (taskId, recipientList, from, subject, text, attachments) => {
-    const BATCH_SIZE = 50;
+    const BATCH_SIZE = 50; // Number of emails per batch
+    const MAX_EMAILS_PER_MINUTE = 30; // Max emails to send per minute (adjust this value)
+    const WARM_UP_DAYS = 7; // Number of days to gradually warm up the email domain
     let index = 0;
 
+    // Throttle function to delay email sending between batches to avoid rate-limiting
+    const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+    // Function to gradually increase the sending volume based on warm-up strategy
+    const warmUpStrategy = (day) => {
+        // Increase the volume of emails each day, e.g., start with 20 emails on the first day and gradually increase
+        // The number can be adjusted based on your strategy
+        return Math.min(MAX_EMAILS_PER_MINUTE * day, 100); // Ensure we don’t exceed the max emails limit
+    };
+
+    // Function to process a batch of emails
     const processBatch = async () => {
         if (index >= recipientList.length) {
             emailQueue[taskId].status = "COMPLETED";
@@ -366,13 +472,38 @@ const processEmails = async (taskId, recipientList, from, subject, text, attachm
         const batch = recipientList.slice(index, index + BATCH_SIZE);
         index += BATCH_SIZE;
 
+        const transporter = createTransporter(from);
+
+        // Process emails individually within the batch
         await Promise.all(
             batch.map(async (email) => {
                 try {
-                    await transporter.sendMail({ from, to: email, subject, text, attachments });
+                    // Validate email format
+                    if (!isValidEmail(email)) {
+                        console.warn(`Skipping invalid email: ${email}`);
+                        await EmailStatus.update({ status: "FAILED", error_message: "Invalid email format" }, { where: { email, taskId } });
+                        emailQueue[taskId].failedEmails++;
+                        return;
+                    }
+
+                    const mailOptions = {
+                        from,        // Sender email (from request body)
+                        to: email,   // Recipient email
+                        subject,     // Subject of the email
+                        text,        // Text body of the email
+                        attachments, // Attachments array (if any)
+                    };
+
+                    // Send the email using the transporter
+                    await transporter.sendMail(mailOptions);
+
+                    // Update status in the database
                     await EmailStatus.update({ status: "SENT" }, { where: { email, taskId } });
                     emailQueue[taskId].sentEmails++;
+                    console.log(`Email sent successfully to: ${email}`);
                 } catch (error) {
+                    // Handle any errors during email sending
+                    console.error(`Error sending email to ${email}:`, error.message);
                     await EmailStatus.update(
                         { status: "FAILED", error_message: error.message },
                         { where: { email, taskId } }
@@ -382,11 +513,22 @@ const processEmails = async (taskId, recipientList, from, subject, text, attachm
             })
         );
 
+        // Wait for the throttle duration before sending the next batch (limit the frequency)
+        const day = Math.ceil(emailQueue[taskId].sentEmails / MAX_EMAILS_PER_MINUTE);
+        const maxEmailsToday = warmUpStrategy(day);
+        const waitTime = (60 / maxEmailsToday) * 1000; // Time to wait before sending the next batch (in ms)
+
+        // Continue processing the next batch with delay to avoid overloading the server
+        await delay(waitTime);
         setImmediate(processBatch);
     };
 
+    // Start processing the first batch
     processBatch();
 };
+
+// Utility function to validate email format
+const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
 // API to Get Email Sending Progress
 const getEmailSendingProgress = async (req, res) => {
@@ -801,5 +943,5 @@ const getEmailSendingProgress = async (req, res) => {
 
 
 module.exports = { sendTestEmail, sendBulkEmails, upload, sendBulkEmailsFromExcel, sendBulkEmailsIndividually,
-    getEmailSendingProgress
+    getEmailSendingProgress, sendEmailsIndividually
  };
